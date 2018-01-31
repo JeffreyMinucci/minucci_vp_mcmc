@@ -1,3 +1,6 @@
+
+
+
 #create input distributions
 weather_file<- rep(paste(vrp_weather, sep = ""), Nsims)
 sim_start<- rep(paste(simstart, sep = ""), Nsims)

@@ -1,3 +1,18 @@
+######
+# minucci_vp_mcmc
+#
+# author: Jeffrey Minucci
+# 
+# VarroaPop wrapper code adapted from C. Kuan and K. Garber*
+#
+# Description: code to parameterize VarroaPop+Pesticide model using RARE pollen field data
+#              and metropolis-hastings MCMC 
+# 
+######
+
+
+### Check dependencies and versions
+### 
 # install current version of R
 
 # install current version of RStudio
@@ -25,6 +40,13 @@ Sys.info()[4]
 version
 
 #Determine path directory based on the user machine######
+#jeff epa dev machine
+if(Sys.info()[4]=="DZ2626UJMINUCCI"){
+  vpdir<-path.expand("d:/Git_files/minucci_vp_mcmc/")
+  # varroapop file (without directory, the file needs to be in vpdir_exe above)
+  vrp_filename <- "comparison_stp_epa_windows_kdrive_garber.vrp"
+}
+
 #tom epa windows 2
 if(Sys.info()[4]=="DZ2626UTPURUCKE"){
   vpdir<-path.expand("k:/git/garber_vp/")
@@ -52,28 +74,21 @@ if(Sys.info()[4]==""){
 #subdirectories
 vpdir_input <- paste(vpdir, "input/", sep = "")
 vpdir_output <- paste(vpdir, "output/", sep = "")
-vpdir_log_foliar <- paste(vpdir, "log/foliar/", sep = "")
 vpdir_log_control <- paste(vpdir, "log/control/", sep = "")
-vpdir_log_seed <- paste(vpdir, "log/seed/", sep = "")
-vpdir_log_soil <- paste(vpdir, "log/soil/", sep = "")
-vpdir_fig <- paste(vpdir, "figures/", sep = "")
-vpdir_exe <- paste(vpdir, "exe/", sep = "")
-vpdir_io <- paste(vpdir, "io/", sep = "")
-vpdir_in_foliar <- paste(vpdir_input, "foliar/", sep = "")
+vpdir_log_neonic <- paste(vpdir, "log/neonic/", sep = "")
+vpdir_fig <- paste(vpdir, "reports/figures/", sep = "")
+vpdir_exe <- paste(vpdir, "bin/", sep = "")
+#vpdir_io <- paste(vpdir, "io/", sep = "")
 vpdir_in_control <- paste(vpdir_input, "control/", sep = "")
-vpdir_in_seed <- paste(vpdir_input, "seed/", sep = "")
-vpdir_in_soil <- paste(vpdir_input, "soil/", sep = "")
-vpdir_out_foliar <- paste(vpdir_output, "foliar/", sep = "")
+vpdir_in_neonic <- paste(vpdir_input, "neonic/", sep = "")
 vpdir_out_control <- paste(vpdir_output, "control/", sep = "")
-vpdir_out_seed <- paste(vpdir_output, "seed/", sep = "")
-vpdir_out_soil <- paste(vpdir_output, "soil/", sep = "")
-vpdir_weather <- paste(vpdir, "weather/", sep = "")
-vpdir_sobol <- paste(vpdir, "sobol/", sep = "")
+vpdir_out_neonic <- paste(vpdir_output, "neonic/", sep = "")
+vpdir_weather <- paste(vpdir, "data/external/weather/", sep = "")
 
 #varroapop executable version
 vp_binary <- "VarroaPop.exe"
 vpdir_executable <- paste(vpdir_exe, vp_binary, sep="")
-vpdir2_executable <- paste(vpdir2, vp_binary, sep="")
+#vpdir2_executable <- paste(vpdir2, vp_binary, sep="")
 
 #number of simulations 
 Nsims <- 1000
@@ -112,12 +127,6 @@ source(paste(vpdir,"src/04read_output.R",sep = ""))
 # load input and output objects into environment
 source(paste(vpdir,"src/05load_io.R",sep = ""))
 
-
-# run sensitivity analysis on tdarrays
-source(paste(vpdir,"src/06adaily_sensitivity_analyses_linear.R",sep = ""))
-
-# plot results
-source(paste(vpdir,"src/06bdaily_sensitivity_analyses_graphics.R",sep = ""))
 
 
 ##########################################################
