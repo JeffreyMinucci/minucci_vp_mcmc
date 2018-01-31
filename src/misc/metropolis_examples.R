@@ -35,7 +35,7 @@ var(actual)
 length(unique(X))/length(X)
 
 
-####### example 6.5 - random walk Metropolis-Hastings with a mixture mode
+####### example 6.5 - random walk Metropolis-Hastings MCMC with a mixture mode
 
 #Mixing model = 1/4 N(u1,1) + 3/4 N(u2,1), where u1 = 0 and u2 = 2.5
 da <- rbind(rnorm(10^2),2.5+rnorm(3*10^2)) #sample from two normal distributions with means 0 and 2.5 (with second part being 3 times more weighted)
@@ -55,7 +55,7 @@ for(i in 1:length(con_x)){
 contour(con_x,con_y,z,nlevels=100)
 
 
-# random walk monte carlo
+# random walk metropolis MCMC
 scale <- .1  #can modify this. with scale = 1, it is common to only explore one mode (peak). At .1, acceptance is close to 45%
 the<-matrix(runif(2,-2,5),ncol=2)
 curlike <- hval <- like(the)

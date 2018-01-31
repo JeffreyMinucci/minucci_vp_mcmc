@@ -11,8 +11,34 @@
 ######
 
 
-### Check dependencies and versions
-### 
+
+
+##
+#   Metropolis MCMC Program outline
+#
+#   0) Load packages, initialize file and directory paths
+#   1) Randomly generate one set of parameters for the initial step
+#   2) Write VP inputs
+#   3) Run VP simulation
+#   4) Read outputs
+#   5) Calculate likelihood of field data (colony size - adults) given these parameters
+#   
+#   Repeat Nsims:
+#   6) Generate new proposal parameters
+#   7) Repeat steps 3-6 for proposal
+#   8) Accept proposal as new state with probabliliy likelihood(proposal)/likelihood(current)
+#   
+#   Note: will want to do this for multiple starting positions and choose the best final likelihood?
+##
+
+
+
+
+## Check dependencies and versions
+## 
+
+
+
 # install current version of R
 
 # install current version of RStudio
@@ -44,7 +70,7 @@ version
 if(Sys.info()[4]=="DZ2626UJMINUCCI"){
   vpdir<-path.expand("d:/Git_files/minucci_vp_mcmc/")
   # varroapop file (without directory, the file needs to be in vpdir_exe above)
-  vrp_filename <- "comparison_stp_epa_windows_kdrive_garber.vrp"
+  vrp_filename <- "default_stp_jeff.vrp"
 }
 
 #tom epa windows 2
@@ -91,7 +117,7 @@ vpdir_executable <- paste(vpdir_exe, vp_binary, sep="")
 #vpdir2_executable <- paste(vpdir2, vp_binary, sep="")
 
 #number of simulations 
-Nsims <- 1000
+Nsims <- 1
 
 #weather file
 #can be .dvf or .wth
