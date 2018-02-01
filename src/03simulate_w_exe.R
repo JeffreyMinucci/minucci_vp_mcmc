@@ -53,42 +53,16 @@ for (i in 1:Nsims) {
   print(paste(vpdir_executable, vpdir_command, sep=" "))
   system2(vpdir_executable, vpdir_command)
 }
-
-#FOLIAR
-for (i in 1:Nsims) {
-  # n<-inputtest[i]
-  inputfile<- paste("input",i,".txt", sep="")
-  outputfile<- paste("results",i,".txt", sep="")
-  logfile<- paste("log",i,"exp.txt", sep="")
-  vpdir_command <- paste(vpdir_exe, vrp_filename, 
-                         " /b /or ", vpdir_out_foliar, outputfile, 
-                         " /i ", vpdir_in_foliar, inputfile, " /ol ", vpdir_log_foliar, logfile, sep="")
-  print(paste(vpdir_executable, vpdir_command, sep=" "))
-  system2(vpdir_executable, vpdir_command)
-}
-
-#SEED
-for (i in 1:Nsims) {
-  # n<-inputtest[i]
-  inputfile<- paste("input",i,".txt", sep="")
-  outputfile<- paste("results",i,".txt", sep="")
-  logfile<- paste("log",i,"exp.txt", sep="")
-  vpdir_command <- paste(vpdir_exe, vrp_filename, 
-                         " /b /or ", vpdir_out_seed, outputfile, 
-                         " /i ", vpdir_in_seed, inputfile, " /ol ", vpdir_log_seed, logfile, sep="")
-  print(paste(vpdir_executable, vpdir_command, sep=" "))
-  system2(vpdir_executable, vpdir_command)
-}
-
-#SOIL
-for (i in 1:Nsims) {
-  # n<-inputtest[i]
-  inputfile<- paste("input",i,".txt", sep="")
-  outputfile<- paste("results",i,".txt", sep="")
-  logfile<- paste("log",i,"exp.txt", sep="")
-  vpdir_command <- paste(vpdir_exe, vrp_filename, 
-                         " /b /or ", vpdir_out_soil, outputfile, 
-                         " /i ", vpdir_in_soil, inputfile, " /ol ", vpdir_log_soil, logfile, sep="")
-  print(paste(vpdir_executable, vpdir_command, sep=" "))
-  system2(vpdir_executable, vpdir_command)
-}
+# 
+# #NEONIC
+# for (i in 1:Nsims) {
+#   # n<-inputtest[i]
+#   inputfile<- paste("input",i,".txt", sep="")
+#   outputfile<- paste("results",i,".txt", sep="")
+#   logfile<- paste("log",i,"exp.txt", sep="")
+#   vpdir_command <- paste(vpdir_exe, vrp_filename, 
+#                          " /b /or ", vpdir_out_neonic, outputfile, 
+#                          " /i ", vpdir_in_neonic, inputfile, " /ol ", vpdir_log_neonic, logfile, sep="")
+#   print(paste(vpdir_executable, vpdir_command, sep=" "))
+#   system2(vpdir_executable, vpdir_command)
+# }

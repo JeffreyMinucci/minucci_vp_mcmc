@@ -70,7 +70,7 @@ version
 if(Sys.info()[4]=="DZ2626UJMINUCCI"){
   vpdir<-path.expand("d:/Git_files/minucci_vp_mcmc/")
   # varroapop file (without directory, the file needs to be in vpdir_exe above)
-  vrp_filename <- "default_stp_jeff.vrp"
+  vrp_filename <- "default_jeff.vrp"
 }
 
 #tom epa windows 2
@@ -123,8 +123,8 @@ Nsims <- 1
 #can be .dvf or .wth
 #question for Bob
 # i think it needs to agree with whatever the vrp file says?
-vrp_weather <- "w93193-tempadj.dvf"
-#vrp_weather <- "Midwest5Yr.wth"
+#vrp_weather <- "w93193-tempadj.dvf"
+vrp_weather <- "Midwest5Yr.wth"
 
 #simulation start and end
 #must have mm/dd/yyyy format

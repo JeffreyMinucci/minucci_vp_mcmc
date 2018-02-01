@@ -1,4 +1,9 @@
-
+##
+# Randomly initialize starting parameters
+#
+# Note: Creates a single row dataframe. We will fill in our subsequent markov steps by adding rows. 
+#
+##
 
 
 #create input distributions
@@ -16,11 +21,11 @@ wkrdrnratio <- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, wkrdrnratio) #RQWk
 drnmitesurvive <- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, drnmitesurvive) #ICDroneMiteSurvivorship
 wkrmitesurvive<- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, wkrmitesurvive) #ICWorkerMiteSurvivorship
 fgrlifespan <- runif(Nsims, 4, 16) ; inputdf <- cbind(inputdf, fgrlifespan) #ICForagerLifespan
-ForagerMaxProp <- runif(Nsims, 0, 1); inputdf <- cbind(inputdf, ForagerMaxProp) #IC active forager proportion
-immtype <- c("Polynomial", "Cosine", "Sine", "Exponential", "Tangent", "Logarithmic")
-miteimmtype <- sample(immtype, size=Nsims, replace=T) ; inputdf <- cbind(inputdf, miteimmtype) #ImmType
-totalimmmites <- runif(Nsims, 0, 1000) ; inputdf <- cbind(inputdf, totalimmmites) #TotalImmMites
-pctresistimmmites <- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, pctresistimmmites) #PctImmMitesResistant
+#ForagerMaxProp <- runif(Nsims, 0, 1); inputdf <- cbind(inputdf, ForagerMaxProp) #IC active forager proportion
+#immtype <- c("Polynomial", "Cosine", "Sine", "Exponential", "Tangent", "Logarithmic")
+#miteimmtype <- sample(immtype, size=Nsims, replace=T) ; inputdf <- cbind(inputdf, miteimmtype) #ImmType
+#totalimmmites <- runif(Nsims, 0, 1000) ; inputdf <- cbind(inputdf, totalimmmites) #TotalImmMites
+#pctresistimmmites <- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, pctresistimmmites) #PctImmMitesResistant
 InitColNectar<- runif(Nsims, 100, 8000) ; inputdf <- cbind(inputdf, InitColNectar)
 InitColPollen<- runif(Nsims, 100, 8000) ; inputdf <- cbind(inputdf, InitColPollen)
 #SupPollenEnable= Supplemental pollen feeding
@@ -43,12 +48,12 @@ RQQueenStrength<- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, RQQueenStrength
 #wkrlarv <- runif(Nsims, 1, 5000) ; inputdf <- cbind(inputdf, wkrlarv) #ICWorkerLarvae
 #drneggs <- runif(Nsims, 1, 5000) ; inputdf <- cbind(inputdf, drneggs) #ICDroneEggs
 #wkreggs <- runif(Nsims, 1, 5000) ; inputdf <- cbind(inputdf, wkreggs) #ICWorkerEggs
-drnadultinfest <- runif(Nsims, 0, 10) ; inputdf <- cbind(inputdf, drnadultinfest) #ICDroneAdultInfest
-drnbroodinfest <- runif(Nsims, 0, 10) ; inputdf <- cbind(inputdf, drnbroodinfest) #ICDroneBroodInfest
-drnmiteoffspring <- runif(Nsims, 0, 5) ; inputdf <- cbind(inputdf, drnmiteoffspring) #ICDroneMiteOffspring
-wkradultinfest <- runif(Nsims, 0, 10) ; inputdf <- cbind(inputdf, wkradultinfest) #ICWorkerAdultInfest
-wkrbroodinfest <- runif(Nsims, 0, 10) ; inputdf <- cbind(inputdf, wkrbroodinfest) #ICWorkerBroodInfest
-wkrmiteoffspring <- runif(Nsims, 0, 5) ; inputdf <- cbind(inputdf, wkrmiteoffspring) #ICWorkerMiteOffspring
+#drnadultinfest <- runif(Nsims, 0, 10) ; inputdf <- cbind(inputdf, drnadultinfest) #ICDroneAdultInfest
+#drnbroodinfest <- runif(Nsims, 0, 10) ; inputdf <- cbind(inputdf, drnbroodinfest) #ICDroneBroodInfest
+#drnmiteoffspring <- runif(Nsims, 0, 5) ; inputdf <- cbind(inputdf, drnmiteoffspring) #ICDroneMiteOffspring
+#wkradultinfest <- runif(Nsims, 0, 10) ; inputdf <- cbind(inputdf, wkradultinfest) #ICWorkerAdultInfest
+#wkrbroodinfest <- runif(Nsims, 0, 10) ; inputdf <- cbind(inputdf, wkrbroodinfest) #ICWorkerBroodInfest
+#wkrmiteoffspring <- runif(Nsims, 0, 5) ; inputdf <- cbind(inputdf, wkrmiteoffspring) #ICWorkerMiteOffspring
 #requeendate <- rep("mm/dd/yyyy", Nsims) ; inputdf <- cbind(inputdf, requeendate) #RQReQueenDate
 rqenable <- rep("true", Nsims) ; inputdf <- cbind(inputdf, rqenable) #RQEnableReQueen
 rqscheduled <- rep("true", Nsims) ; inputdf <- cbind(inputdf, rqscheduled) #RQScheduled
@@ -65,58 +70,58 @@ rqscheduled <- rep("true", Nsims) ; inputdf <- cbind(inputdf, rqscheduled) #RQSc
 
 ## pesticide tab of https://docs.google.com/spreadsheets/d/1SG1aceXAoWoxFPag52y09zaYtvnkYH4gXVp9LXj1Yxw/edit#gid=1238958414
 ##pesticide exposure
-adslope<- runif(Nsims, 1, 9) ; inputdf <- cbind(inputdf, adslope)  #AIAdultSlope
-adLD50<- runif(Nsims, 0.001, 1) ; inputdf <- cbind(inputdf, adLD50)  #AIAdultLD50 (ug/bee)
-adslopec<- runif(Nsims, 1,10) ; inputdf <- cbind(inputdf, adslopec)  #AIAdultSlopeContact
-adLD50c<- runif(Nsims, 0.001, 100) ; inputdf <- cbind(inputdf, adLD50c)  #AIAdultLD50Contact (ug/bee)
-lslope<- runif(Nsims, 1, 9) ; inputdf <- cbind(inputdf, lslope)  #AILarvaSlope
-lLD50<- runif(Nsims, 0.001, 100) ; inputdf <- cbind(inputdf, lLD50)  #AILarvaLD50 (ug/larva)
-kow<- runif(Nsims, 0.01, 100000) ; inputdf <- cbind(inputdf, kow)  #AIKOW
-koc<- runif(Nsims, 1, 100000) ; inputdf <- cbind(inputdf, koc)  #AIKOC
-halflife<- runif(Nsims, 0.1, 35) ; inputdf <- cbind(inputdf, halflife)  #AIHalfLife (days)
-apprate <- runif(Nsims, 0.001, 10) ; inputdf <- cbind(inputdf, apprate) #EAppRate (lb/A)
-contactfactor <- runif(Nsims, 0.26, 2.4) ; inputdf <- cbind(inputdf, halflife) #AIContactFactor
-## Consumption Data (mg/day)
-cl4pollen <- runif(Nsims, 0, 4) ; inputdf <- cbind(inputdf, cl4pollen) #CL4Pollen
-cl4nectar <- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, cl4nectar) #CL4Nectar
-cl5pollen <- runif(Nsims, 0, 6) ; inputdf <- cbind(inputdf, cl5pollen) #CL5Pollen
-cl5nectar <- runif(Nsims, 0, 150) ; inputdf <- cbind(inputdf, cl5nectar) #CL5Nectar
-cldpollen <- runif(Nsims, 0, 6) ; inputdf <- cbind(inputdf, cldpollen) #CLDPollen
-cldnectar <- runif(Nsims, 0, 150) ; inputdf <- cbind(inputdf, cldnectar) #CLDNectar
-ca13pollen <- runif(Nsims, 2.2, 8.2) ; inputdf <- cbind(inputdf, ca13pollen) #CA13Pollen
-ca13nectar <- runif(Nsims, 20, 100) ; inputdf <- cbind(inputdf, ca13nectar) #CA13Nectar
-ca410pollen <- runif(Nsims, 2.2, 9.5) ; inputdf <- cbind(inputdf, ca410pollen) #CA410Pollen
-ca410nectar <- runif(Nsims, 20, 200) ; inputdf <- cbind(inputdf, ca410nectar) #CA410Nectar
-ca1120pollen <- runif(Nsims, 0, 3) ; inputdf <- cbind(inputdf, ca1120pollen) #CA1120Pollen
-ca1120nectar <- runif(Nsims, 20, 100) ; inputdf <- cbind(inputdf, ca1120nectar) #CA1120Nectar
-#cadpollen
-#cadnectar
-#cforagerpollen
-#cforagernectar
-ptrips <- runif(Nsims, 4, 30) ; inputdf <- cbind(inputdf, ptrips) #IPollenTrips (per day)
-ntrips <- runif(Nsims, 4, 48) ; inputdf <- cbind(inputdf, ntrips) #INectarTrips (per day)
-#pctnectarfrgrs <- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, pctnectarfrgrs) #IPercentNectarForagers
-pload <- runif(Nsims, 4, 16) ; inputdf <- cbind(inputdf, pload) #IPollenLoad (mg/bee)
-nload <- runif(Nsims, 30, 100) ; inputdf <- cbind(inputdf, nload) #INectarLoad (mg/bee)
-foliarenable <- rep("true", Nsims) ; inputdf <- cbind(inputdf, foliarenable) #FoliarEnabled
-foliar_appdate<- rep("07/01/1989", Nsims) ; inputdf <- cbind(inputdf, foliar_appdate) #FoliarAppDate
-foliar_begin<- rep("07/01/1989", Nsims) ; inputdf <- cbind(inputdf, foliar_begin) #FoliarForageBegin
-foliar_end<- rep("07/31/1989", Nsims) ; inputdf <- cbind(inputdf, foliar_end) #FoliarForageEnd
-soilenable <- rep("true", Nsims) ; inputdf <- cbind(inputdf, soilenable) #SoilEnabled
+# adslope<- runif(Nsims, 1, 9) ; inputdf <- cbind(inputdf, adslope)  #AIAdultSlope
+# adLD50<- runif(Nsims, 0.001, 1) ; inputdf <- cbind(inputdf, adLD50)  #AIAdultLD50 (ug/bee)
+# adslopec<- runif(Nsims, 1,10) ; inputdf <- cbind(inputdf, adslopec)  #AIAdultSlopeContact
+# adLD50c<- runif(Nsims, 0.001, 100) ; inputdf <- cbind(inputdf, adLD50c)  #AIAdultLD50Contact (ug/bee)
+# lslope<- runif(Nsims, 1, 9) ; inputdf <- cbind(inputdf, lslope)  #AILarvaSlope
+# lLD50<- runif(Nsims, 0.001, 100) ; inputdf <- cbind(inputdf, lLD50)  #AILarvaLD50 (ug/larva)
+# kow<- runif(Nsims, 0.01, 100000) ; inputdf <- cbind(inputdf, kow)  #AIKOW
+# koc<- runif(Nsims, 1, 100000) ; inputdf <- cbind(inputdf, koc)  #AIKOC
+# halflife<- runif(Nsims, 0.1, 35) ; inputdf <- cbind(inputdf, halflife)  #AIHalfLife (days)
+# apprate <- runif(Nsims, 0.001, 10) ; inputdf <- cbind(inputdf, apprate) #EAppRate (lb/A)
+# contactfactor <- runif(Nsims, 0.26, 2.4) ; inputdf <- cbind(inputdf, halflife) #AIContactFactor
+# ## Consumption Data (mg/day)
+# cl4pollen <- runif(Nsims, 0, 4) ; inputdf <- cbind(inputdf, cl4pollen) #CL4Pollen
+# cl4nectar <- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, cl4nectar) #CL4Nectar
+# cl5pollen <- runif(Nsims, 0, 6) ; inputdf <- cbind(inputdf, cl5pollen) #CL5Pollen
+# cl5nectar <- runif(Nsims, 0, 150) ; inputdf <- cbind(inputdf, cl5nectar) #CL5Nectar
+# cldpollen <- runif(Nsims, 0, 6) ; inputdf <- cbind(inputdf, cldpollen) #CLDPollen
+# cldnectar <- runif(Nsims, 0, 150) ; inputdf <- cbind(inputdf, cldnectar) #CLDNectar
+# ca13pollen <- runif(Nsims, 2.2, 8.2) ; inputdf <- cbind(inputdf, ca13pollen) #CA13Pollen
+# ca13nectar <- runif(Nsims, 20, 100) ; inputdf <- cbind(inputdf, ca13nectar) #CA13Nectar
+# ca410pollen <- runif(Nsims, 2.2, 9.5) ; inputdf <- cbind(inputdf, ca410pollen) #CA410Pollen
+# ca410nectar <- runif(Nsims, 20, 200) ; inputdf <- cbind(inputdf, ca410nectar) #CA410Nectar
+# ca1120pollen <- runif(Nsims, 0, 3) ; inputdf <- cbind(inputdf, ca1120pollen) #CA1120Pollen
+# ca1120nectar <- runif(Nsims, 20, 100) ; inputdf <- cbind(inputdf, ca1120nectar) #CA1120Nectar
+# #cadpollen
+# #cadnectar
+# #cforagerpollen
+# #cforagernectar
+# ptrips <- runif(Nsims, 4, 30) ; inputdf <- cbind(inputdf, ptrips) #IPollenTrips (per day)
+# ntrips <- runif(Nsims, 4, 48) ; inputdf <- cbind(inputdf, ntrips) #INectarTrips (per day)
+# #pctnectarfrgrs <- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, pctnectarfrgrs) #IPercentNectarForagers
+# pload <- runif(Nsims, 4, 16) ; inputdf <- cbind(inputdf, pload) #IPollenLoad (mg/bee)
+# nload <- runif(Nsims, 30, 100) ; inputdf <- cbind(inputdf, nload) #INectarLoad (mg/bee)
+# foliarenable <- rep("true", Nsims) ; inputdf <- cbind(inputdf, foliarenable) #FoliarEnabled
+# foliar_appdate<- rep("07/01/1989", Nsims) ; inputdf <- cbind(inputdf, foliar_appdate) #FoliarAppDate
+# foliar_begin<- rep("07/01/1989", Nsims) ; inputdf <- cbind(inputdf, foliar_begin) #FoliarForageBegin
+# foliar_end<- rep("07/31/1989", Nsims) ; inputdf <- cbind(inputdf, foliar_end) #FoliarForageEnd
+# soilenable <- rep("true", Nsims) ; inputdf <- cbind(inputdf, soilenable) #SoilEnabled
 seedenable <- rep("true", Nsims) ; inputdf <- cbind(inputdf, seedenable) #SeedEnabled
-#soiltheta <- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, soiltheta) #ESoilTheta
-soilp <- runif(Nsims, 1, 2) ; inputdf <- cbind(inputdf, soilp) #ESoilP
-soilfoc <- runif(Nsims, 0.001, 0.02) ; inputdf <- cbind(inputdf, soilfoc) #ESoilFoc
-#soilconc <- runif(Nsims, 1, 10) ; inputdf <- cbind(inputdf, soilconc) #ESoilConcentration
-seedconc <- runif(Nsims, 1, 10) ; inputdf <- cbind(inputdf, seedconc) #ESeedConcentration
-soil_begin <- rep("07/01/1989", Nsims) ; inputdf <- cbind(inputdf, soil_begin) #SoilForageBegin
-soil_end <- rep("07/31/1989", Nsims) ; inputdf <- cbind(inputdf, soil_end) #SoilForageEnd
-seed_begin <- rep("07/01/1989", Nsims) ; inputdf <- cbind(inputdf, seed_begin) #SeedForageBegin
-seed_end <- rep("07/31/1989", Nsims) ; inputdf <- cbind(inputdf, seed_end) #SeedForageEnd
+# #soiltheta <- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, soiltheta) #ESoilTheta
+# soilp <- runif(Nsims, 1, 2) ; inputdf <- cbind(inputdf, soilp) #ESoilP
+# soilfoc <- runif(Nsims, 0.001, 0.02) ; inputdf <- cbind(inputdf, soilfoc) #ESoilFoc
+# #soilconc <- runif(Nsims, 1, 10) ; inputdf <- cbind(inputdf, soilconc) #ESoilConcentration
+# seedconc <- runif(Nsims, 1, 10) ; inputdf <- cbind(inputdf, seedconc) #ESeedConcentration
+# soil_begin <- rep("07/01/1989", Nsims) ; inputdf <- cbind(inputdf, soil_begin) #SoilForageBegin
+# soil_end <- rep("07/31/1989", Nsims) ; inputdf <- cbind(inputdf, soil_end) #SoilForageEnd
+#seed_begin <- rep("07/01/1989", Nsims) ; inputdf <- cbind(inputdf, seed_begin) #SeedForageBegin
+#seed_end <- rep("07/31/1989", Nsims) ; inputdf <- cbind(inputdf, seed_end) #SeedForageEnd
 
 
-max_nectar <- runif(Nsims, 70000, 130000) ; inputdf <- cbind(inputdf, soilp) #MaxColNectar
-max_pollen <- runif(Nsims, 30000, 70000) ; inputdf <- cbind(inputdf, soilp) #MaxColPollen
+#max_nectar <- runif(Nsims, 70000, 130000) ; inputdf <- cbind(inputdf, soilp) #MaxColNectar
+#max_pollen <- runif(Nsims, 30000, 70000) ; inputdf <- cbind(inputdf, soilp) #MaxColPollen
 
 ## leftovers
 #folforagebeg <- rep("mm/dd/yyyy", Nsims) ; inputdf <- cbind(inputdf, folforagebeg) #FoliarForageBegin
@@ -164,10 +169,10 @@ max_pollen <- runif(Nsims, 30000, 70000) ; inputdf <- cbind(inputdf, soilp) #Max
 
 
 ######## Create input dataframe
-inputdata_control <- subset(inputdf, select = -c(foliarenable, seedenable, soilenable, apprate))
-inputdata_foliar <- subset(inputdf, select = -c(seedenable, soilenable))
-inputdata_seed <- subset(inputdf, select = -c(foliarenable, soilenable))
-inputdata_soil <- subset(inputdf, select = -c(foliarenable, seedenable))
+inputdata_control <- subset(inputdf, select = -c(seedenable))
+#inputdata_foliar <- subset(inputdf, select = -c(seedenable, soilenable))
+#inputdata_neonic <- subset(inputdf, select = -c(foliarenable, soilenable))
+#inputdata_soil <- subset(inputdf, select = -c(foliarenable, seedenable))
 #inputdata_con<- data.frame(queenstrength,wkrdrnratio, drnmitesurvive, wkrmitesurvive, fgrlifespan, miteimmtype, 
 #                           adslope,adLD50,adslopec,adLD50c,lslope,lLD50,kow,koc,halflife,apprate_con, foliar_false)
 #inputdata_exp<- data.frame(queenstrength,wkrdrnratio, drnmitesurvive, wkrmitesurvive, fgrlifespan, miteimmtype, 
@@ -176,6 +181,6 @@ inputdata_soil <- subset(inputdf, select = -c(foliarenable, seedenable))
 
 #putting the input in the io directory so it can be read from there later
 write.csv(inputdata_control, file = paste(vpdir_in_control, "inputdata_control.csv", sep = ""))
-write.csv(inputdata_foliar, file = paste(vpdir_in_foliar, "inputdata_foliar.csv", sep = ""))
-write.csv(inputdata_seed, file = paste(vpdir_in_seed, "inputdata_seed.csv", sep = ""))
-write.csv(inputdata_soil, file = paste(vpdir_in_soil, "inputdata_soil.csv", sep = ""))
+#write.csv(inputdata_foliar, file = paste(vpdir_in_foliar, "inputdata_foliar.csv", sep = ""))
+#write.csv(inputdata_neonic, file = paste(vpdir_in_seed, "inputdata_neonic.csv", sep = ""))
+#write.csv(inputdata_soil, file = paste(vpdir_in_soil, "inputdata_soil.csv", sep = ""))
