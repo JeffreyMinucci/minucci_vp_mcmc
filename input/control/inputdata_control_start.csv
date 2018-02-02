@@ -1,2 +1,2 @@
-"","WeatherFileName","SimStart","SimEnd","ICQueenStrength","RQWkrDrnRatio","ICDroneMiteSurvivorship","ICWorkerMiteSurvivorship","ICForagerLifespan","InitColNectar","InitColPollen","RQQueenStrength","RQEnableReQueen","RQScheduled"
-"1","Midwest5Yr.wth","5/20/1999","6/29/1999",1.14750276505947,1.40449934918433,24.9719927553087,5.59277564752847,5.66001399606466,2089.52029033098,2189.94094759692,1.05967981740832,"true","true"
+"","SimStart","SimEnd","ICQueenStrength","ICDroneMiteSurvivorship","ICWorkerMiteSurvivorship","ICForagerLifespan","InitColNectar","InitColPollen"
+"1","5/20/1999","6/29/1999",3.55087965819985,30.8518991805613,5.53901463281363,6.29592901840806,4854.91910891142,980.091887596063

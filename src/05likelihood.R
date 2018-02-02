@@ -8,14 +8,15 @@
 
 #load output files
 #CONTROL
-load(paste(vpdir_out_control,"tdarray_control.RData", sep = ""))
-dim(tdarray_control)
+#load(paste(vpdir_out_control,"tdarray_control.RData", sep = ""))
+#dim(tdarray_control)
 
 #Create hypothetical field data (replace with real data when available)
-adult_pop_month1 <- floor(rnorm(10,4500,1000))
+#adult_pop_month1 <- floor(rnorm(10,4500,1000))
 
 #Model prediction - note this is total colony size
 pred <- tdarray_control[30,1,1]
+print(pred)
 var_est <- var(adult_pop_month1) #for now get var from actual data
 
 

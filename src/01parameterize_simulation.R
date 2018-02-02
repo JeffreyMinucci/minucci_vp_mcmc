@@ -7,10 +7,10 @@
 
 
 #create input distributions
-WeatherFileName<- rep(paste(WeatherFileName, sep = ""), Nsims)
+#WeatherFileName<- rep(paste(WeatherFileName, sep = ""), Nsims)
 SimStart<- rep(paste(SimStart, sep = ""), Nsims)
 SimEnd<- rep(paste(SimEnd, sep = ""), Nsims)
-inputdf<- data.frame(WeatherFileName, SimStart, SimEnd,stringsAsFactors=FALSE)
+inputdf<- data.frame(SimStart, SimEnd,stringsAsFactors=FALSE)
 
 ##initial parameter distributions
 ##overwrites defaults in vrp file
@@ -19,7 +19,7 @@ inputdf<- data.frame(WeatherFileName, SimStart, SimEnd,stringsAsFactors=FALSE)
 
 ##base tab of https://docs.google.com/spreadsheets/d/1SG1aceXAoWoxFPag52y09zaYtvnkYH4gXVp9LXj1Yxw/edit#gid=0
 ICQueenStrength<- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, ICQueenStrength) #ICQueenStrength
-RQWkrDrnRatio <- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, RQWkrDrnRatio) #RQWkrDrnRatio
+#RQWkrDrnRatio <- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, RQWkrDrnRatio) #RQWkrDrnRatio
 ICDroneMiteSurvivorship <- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, ICDroneMiteSurvivorship) #ICDroneMiteSurvivorship
 ICWorkerMiteSurvivorship<- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, ICWorkerMiteSurvivorship) #ICWorkerMiteSurvivorship
 ICForagerLifespan<- runif(Nsims, 4, 16) ; inputdf <- cbind(inputdf, ICForagerLifespan) #ICForagerLifespan
@@ -41,7 +41,7 @@ InitColPollen<- runif(Nsims, 100, 8000) ; inputdf <- cbind(inputdf, InitColPolle
 
 ##Requeening
 #eggdelay <- runif(Nsims, 0, 50) ; inputdf <- cbind(inputdf, eggdelay) #RQEggLayDelay (days)
-RQQueenStrength<- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, RQQueenStrength) #RQQueenStrength
+#RQQueenStrength<- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, RQQueenStrength) #RQQueenStrength
 #drnadults <- runif(Nsims, 1, 5000) ; inputdf <- cbind(inputdf, drnadults) #ICDroneAdults
 #wkradults <- runif(Nsims, 1, 5000) ; inputdf <- cbind(inputdf, wkradults) #ICWorkerAdults
 #drnbrood <- runif(Nsims, 1, 5000) ; inputdf <- cbind(inputdf, drnbrood) #ICDroneBrood
@@ -57,8 +57,8 @@ RQQueenStrength<- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, RQQueenStrength
 #wkrbroodinfest <- runif(Nsims, 0, 10) ; inputdf <- cbind(inputdf, wkrbroodinfest) #ICWorkerBroodInfest
 #wkrmiteoffspring <- runif(Nsims, 0, 5) ; inputdf <- cbind(inputdf, wkrmiteoffspring) #ICWorkerMiteOffspring
 #requeendate <- rep("mm/dd/yyyy", Nsims) ; inputdf <- cbind(inputdf, requeendate) #RQReQueenDate
-RQEnableReQueen <- rep("true", Nsims) ; inputdf <- cbind(inputdf, RQEnableReQueen) #RQEnableReQueen
-RQScheduled<- rep("true", Nsims) ; inputdf <- cbind(inputdf, RQScheduled) #RQScheduled
+#RQEnableReQueen <- rep("true", Nsims) ; inputdf <- cbind(inputdf, RQEnableReQueen) #RQEnableReQueen
+#RQScheduled<- rep("true", Nsims) ; inputdf <- cbind(inputdf, RQScheduled) #RQScheduled
 #rqqueenstrength <- runif(Nsims, 1, 6) ; inputdf <- cbind(inputdf, rqqueenstrength) #RQQueenStrength
 #rqonce <- rep("true", Nsims) ; inputdf <- cbind(inputdf, rqonce) #RQOnce
 

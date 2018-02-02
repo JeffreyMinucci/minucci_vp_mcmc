@@ -123,14 +123,15 @@ vpdir_executable <- paste(vpdir_exe, vp_binary, sep="")
 Nsims <- 1
 
 #weather file - not sure if this variable is doing anything 
-WeatherFileName <- "Midwest5Yr.wth"
+#WeatherFileName <- "Midwest5Yr.wth"
 
 #simulation start and end
 #must have mm/dd/yyyy format
 SimStart<- "5/20/1999"
 SimEnd <- "6/29/1999"
 
-
+#Create hypothetical field data (replace with real data when available)
+adult_pop_month1 <- floor(rnorm(10,4500,1000))
 
 
 ##############################################################
@@ -138,14 +139,15 @@ SimEnd <- "6/29/1999"
 #Run random walk Metropolis-Hastings MCMC
 
 #   0) Initial settings
-optimize_list <- c("ICQueenStrength","RQWkrDrnRatio","ICDroneMiteSurvivorship","ICWorkerMiteSurvivorship",
-                   "ICForagerLifespan","InitColNectar","InitColPollen","RQQueenStrength")
-bound_l <- c(1,1,0,0,4,0,0,1) #lower bondary of the domain for each parameter to be optimized
-bound_u <- c(5,5,100,100,16,8000,8000) #upper bondary of the domain for each parameter to be optimized
+optimize_list <- c("ICQueenStrength","ICDroneMiteSurvivorship","ICWorkerMiteSurvivorship",
+                   "ICForagerLifespan","InitColNectar","InitColPollen")
+bound_l <- c(1,0,0,4,0,0) #lower bondary of the domain for each parameter to be optimized
+bound_u <- c(5,100,100,16,8000,8000) #upper bondary of the domain for each parameter to be optimized
 scales <- (bound_u-bound_l)/10 #for now using the range divided by 10
 
-
+step_length <- .05
 nsims <- 500
+
 i <- 1 #counter for results and log files
 
 #   1) Randomly generate one set of parameters for the initial step
@@ -162,7 +164,7 @@ write_vp_input(inputdata_control[1,])
 system.time(source(paste(vpdir,"src/03simulate_w_exe.R",sep = "")))
 
 #   4) Read outputs
-system.time(source(paste(vpdir,"src/04read_output.R",sep = "")))
+source(paste(vpdir,"src/04read_output.R",sep = ""))
 
 
 #   5) Calculate likelihood of field data (colony size - adults) given these parameters
@@ -182,20 +184,24 @@ like_trace[1] <- like
 source(paste(vpdir,"src/06propose_mh_step.R",sep=""))
 
 for(i in 2:nsims){
-  proposal <- metropolis_proposal(inputdata_control[i-1,optimize_list],scales,.1)
+  print(paste("MCMC step: ",i-1," log-likelihood: ",like_trace[i-1]))
+  proposal <- metropolis_proposal(inputdata_control[i-1,optimize_list],scales,step_length)
   proposal_all <- cbind(static_params,proposal)
   write_vp_input(proposal_all)
   if(!(any(proposal > bound_u) | any((proposal < bound_l)))){
     
     source(paste(vpdir,"src/03simulate_w_exe.R",sep = "")) #run sim for proposal  
-    #note: need to check for out of range parameters (before .exe run?)
-    
+    source(paste(vpdir,"src/04read_output.R",sep = ""))
     source(paste(vpdir,"src/05likelihood.R",sep="")) #creates var "like" which holds the likelihood
-    if(log(runif(1)) > (like_trace[i-1] - like)){
+    #print(paste("proposal: ",like))
+    #print(paste("current: ",like_trace[i-1]))
+    
+    if((runif(1)) < (-like_trace[i-1])/(-like)){
       inputdata_control <- rbind(inputdata_control,proposal_all,make.row.names=F)
       like_trace[i] <- like
     }
     else{
+      print(paste("Rejecting log-likelihood: ",like))
       inputdata_control <- rbind(inputdata_control,inputdata_control[i-1,],make.row.names=F)
       like_trace[i] <- like_trace[i-1]
     }
@@ -206,6 +212,9 @@ for(i in 2:nsims){
     like_trace[i] <- like_trace[i-1]
   }
 }
+print(paste("MCMC run completed. Final log-likelihood: ",like_trace[nsims]))
+print("Final optimized parameters:")
+print(inputdata_control[nsims,optimize_list])
 
 
 ##############################################################
