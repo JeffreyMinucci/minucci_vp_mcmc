@@ -7,20 +7,22 @@
 
 
 #create input distributions
-weather_file<- rep(paste(vrp_weather, sep = ""), Nsims)
-sim_start<- rep(paste(simstart, sep = ""), Nsims)
-sim_end<- rep(paste(simend, sep = ""), Nsims)
-inputdf<- data.frame(weather_file, sim_start, sim_end)
+WeatherFileName<- rep(paste(WeatherFileName, sep = ""), Nsims)
+SimStart<- rep(paste(SimStart, sep = ""), Nsims)
+SimEnd<- rep(paste(SimEnd, sep = ""), Nsims)
+inputdf<- data.frame(WeatherFileName, SimStart, SimEnd,stringsAsFactors=FALSE)
 
 ##initial parameter distributions
 ##overwrites defaults in vrp file
 
+
+
 ##base tab of https://docs.google.com/spreadsheets/d/1SG1aceXAoWoxFPag52y09zaYtvnkYH4gXVp9LXj1Yxw/edit#gid=0
-queenstrength<- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, queenstrength) #ICQueenStrength
-wkrdrnratio <- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, wkrdrnratio) #RQWkrDrnRatio
-drnmitesurvive <- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, drnmitesurvive) #ICDroneMiteSurvivorship
-wkrmitesurvive<- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, wkrmitesurvive) #ICWorkerMiteSurvivorship
-fgrlifespan <- runif(Nsims, 4, 16) ; inputdf <- cbind(inputdf, fgrlifespan) #ICForagerLifespan
+ICQueenStrength<- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, ICQueenStrength) #ICQueenStrength
+RQWkrDrnRatio <- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, RQWkrDrnRatio) #RQWkrDrnRatio
+ICDroneMiteSurvivorship <- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, ICDroneMiteSurvivorship) #ICDroneMiteSurvivorship
+ICWorkerMiteSurvivorship<- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, ICWorkerMiteSurvivorship) #ICWorkerMiteSurvivorship
+ICForagerLifespan<- runif(Nsims, 4, 16) ; inputdf <- cbind(inputdf, ICForagerLifespan) #ICForagerLifespan
 #ForagerMaxProp <- runif(Nsims, 0, 1); inputdf <- cbind(inputdf, ForagerMaxProp) #IC active forager proportion
 #immtype <- c("Polynomial", "Cosine", "Sine", "Exponential", "Tangent", "Logarithmic")
 #miteimmtype <- sample(immtype, size=Nsims, replace=T) ; inputdf <- cbind(inputdf, miteimmtype) #ImmType
@@ -39,7 +41,7 @@ InitColPollen<- runif(Nsims, 100, 8000) ; inputdf <- cbind(inputdf, InitColPolle
 
 ##Requeening
 #eggdelay <- runif(Nsims, 0, 50) ; inputdf <- cbind(inputdf, eggdelay) #RQEggLayDelay (days)
-RQQueenStrength<- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, RQQueenStrength) #ICQueenStrength
+RQQueenStrength<- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, RQQueenStrength) #RQQueenStrength
 #drnadults <- runif(Nsims, 1, 5000) ; inputdf <- cbind(inputdf, drnadults) #ICDroneAdults
 #wkradults <- runif(Nsims, 1, 5000) ; inputdf <- cbind(inputdf, wkradults) #ICWorkerAdults
 #drnbrood <- runif(Nsims, 1, 5000) ; inputdf <- cbind(inputdf, drnbrood) #ICDroneBrood
@@ -55,8 +57,8 @@ RQQueenStrength<- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, RQQueenStrength
 #wkrbroodinfest <- runif(Nsims, 0, 10) ; inputdf <- cbind(inputdf, wkrbroodinfest) #ICWorkerBroodInfest
 #wkrmiteoffspring <- runif(Nsims, 0, 5) ; inputdf <- cbind(inputdf, wkrmiteoffspring) #ICWorkerMiteOffspring
 #requeendate <- rep("mm/dd/yyyy", Nsims) ; inputdf <- cbind(inputdf, requeendate) #RQReQueenDate
-rqenable <- rep("true", Nsims) ; inputdf <- cbind(inputdf, rqenable) #RQEnableReQueen
-rqscheduled <- rep("true", Nsims) ; inputdf <- cbind(inputdf, rqscheduled) #RQScheduled
+RQEnableReQueen <- rep("true", Nsims) ; inputdf <- cbind(inputdf, RQEnableReQueen) #RQEnableReQueen
+RQScheduled<- rep("true", Nsims) ; inputdf <- cbind(inputdf, RQScheduled) #RQScheduled
 #rqqueenstrength <- runif(Nsims, 1, 6) ; inputdf <- cbind(inputdf, rqqueenstrength) #RQQueenStrength
 #rqonce <- rep("true", Nsims) ; inputdf <- cbind(inputdf, rqonce) #RQOnce
 
@@ -180,7 +182,7 @@ inputdata_control <- subset(inputdf, select = -c(seedenable))
 #                           foliar_appdate, foliar_begin, foliar_end)
 
 #putting the input in the io directory so it can be read from there later
-write.csv(inputdata_control, file = paste(vpdir_in_control, "inputdata_control.csv", sep = ""))
+write.csv(inputdata_control, file = paste(vpdir_in_control, "inputdata_control_start.csv", sep = ""))
 #write.csv(inputdata_foliar, file = paste(vpdir_in_foliar, "inputdata_foliar.csv", sep = ""))
 #write.csv(inputdata_neonic, file = paste(vpdir_in_seed, "inputdata_neonic.csv", sep = ""))
 #write.csv(inputdata_soil, file = paste(vpdir_in_soil, "inputdata_soil.csv", sep = ""))

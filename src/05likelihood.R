@@ -6,6 +6,11 @@
 #
 ##
 
+#load output files
+#CONTROL
+load(paste(vpdir_out_control,"tdarray_control.RData", sep = ""))
+dim(tdarray_control)
+
 #Create hypothetical field data (replace with real data when available)
 adult_pop_month1 <- floor(rnorm(10,4500,1000))
 

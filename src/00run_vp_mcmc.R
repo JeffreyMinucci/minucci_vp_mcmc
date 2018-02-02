@@ -97,6 +97,9 @@ if(Sys.info()[4]==""){
   vrp_filename <- "comparison.vrp"
 } 
 
+
+
+
 #subdirectories
 vpdir_input <- paste(vpdir, "input/", sep = "")
 vpdir_output <- paste(vpdir, "output/", sep = "")
@@ -116,20 +119,105 @@ vp_binary <- "VarroaPop.exe"
 vpdir_executable <- paste(vpdir_exe, vp_binary, sep="")
 #vpdir2_executable <- paste(vpdir2, vp_binary, sep="")
 
-#number of simulations 
+#number of vp runs per iteration (will be 1 until multiple pesticide load scenarios are implemented) 
 Nsims <- 1
 
-#weather file
-#can be .dvf or .wth
-#question for Bob
-# i think it needs to agree with whatever the vrp file says?
-#vrp_weather <- "w93193-tempadj.dvf"
-vrp_weather <- "Midwest5Yr.wth"
+#weather file - not sure if this variable is doing anything 
+WeatherFileName <- "Midwest5Yr.wth"
 
 #simulation start and end
 #must have mm/dd/yyyy format
-simstart <- "01/01/1988"
-simend <- "12/31/1990"
+SimStart<- "5/20/1999"
+SimEnd <- "6/29/1999"
+
+
+
+
+##############################################################
+###############################################################
+#Run random walk Metropolis-Hastings MCMC
+
+#   0) Initial settings
+optimize_list <- c("ICQueenStrength","RQWkrDrnRatio","ICDroneMiteSurvivorship","ICWorkerMiteSurvivorship",
+                   "ICForagerLifespan","InitColNectar","InitColPollen","RQQueenStrength")
+bound_l <- c(1,1,0,0,4,0,0,1) #lower bondary of the domain for each parameter to be optimized
+bound_u <- c(5,5,100,100,16,8000,8000) #upper bondary of the domain for each parameter to be optimized
+scales <- (bound_u-bound_l)/10 #for now using the range divided by 10
+
+
+nsims <- 500
+i <- 1 #counter for results and log files
+
+#   1) Randomly generate one set of parameters for the initial step
+source(paste(vpdir,"src/01parameterize_simulation.R",sep = "")) #generates inputdata_control, dataframe with parameter values
+
+static_params <- inputdata_control[,!(colnames(inputdata_control) %in% optimize_list)]
+
+#   2) Write VP inputs
+source(paste(vpdir,"src/02write_input.R",sep = "")) #load write input function
+write_vp_input(inputdata_control[1,])
+
+
+#   3) Run VP simulation
+system.time(source(paste(vpdir,"src/03simulate_w_exe.R",sep = "")))
+
+#   4) Read outputs
+system.time(source(paste(vpdir,"src/04read_output.R",sep = "")))
+
+
+#   5) Calculate likelihood of field data (colony size - adults) given these parameters
+source(paste(vpdir,"src/05likelihood.R",sep="")) #creates var "like" which holds the likelihood
+like_trace<- rep(0,nsims)
+like_trace[1] <- like
+
+
+#   Repeat Nsims:
+#   6) Generate new proposal parameters
+#   7) Repeat steps 3-6 for proposal
+#      Accept proposal as new state with probabliliy likelihood(proposal)/likelihood(current)
+#      Return to 6
+
+
+#load functions
+source(paste(vpdir,"src/06propose_mh_step.R",sep=""))
+
+for(i in 2:nsims){
+  proposal <- metropolis_proposal(inputdata_control[i-1,optimize_list],scales,.1)
+  proposal_all <- cbind(static_params,proposal)
+  write_vp_input(proposal_all)
+  if(!(any(proposal > bound_u) | any((proposal < bound_l)))){
+    
+    source(paste(vpdir,"src/03simulate_w_exe.R",sep = "")) #run sim for proposal  
+    #note: need to check for out of range parameters (before .exe run?)
+    
+    source(paste(vpdir,"src/05likelihood.R",sep="")) #creates var "like" which holds the likelihood
+    if(log(runif(1)) > (like_trace[i-1] - like)){
+      inputdata_control <- rbind(inputdata_control,proposal_all,make.row.names=F)
+      like_trace[i] <- like
+    }
+    else{
+      inputdata_control <- rbind(inputdata_control,inputdata_control[i-1,],make.row.names=F)
+      like_trace[i] <- like_trace[i-1]
+    }
+  }
+  else{
+    print("Proposal out of bounds!")
+    inputdata_control <- rbind(inputdata_control,inputdata_control[i-1,],make.row.names=F)
+    like_trace[i] <- like_trace[i-1]
+  }
+}
+
+
+##############################################################
+###############################################################
+
+
+
+
+
+
+
+
 
 ##############################################################
 ###############################################################
@@ -138,7 +226,7 @@ simend <- "12/31/1990"
 source(paste(vpdir,"src/01parameterize_simulation.R",sep = ""))
 
 #echo the first log file
-scan(file = paste(vpdir_log, "log1.txt", sep=""), what = "raw")
+#scan(file = paste(vpdir_log, "log1.txt", sep=""), what = "raw")
 
 # create and save input text files for simulations
 source(paste(vpdir,"src/02write_input.R",sep = ""))
@@ -151,36 +239,11 @@ source(paste(vpdir,"src/03simulate_w_exe.R",sep = ""))
 source(paste(vpdir,"src/04read_output.R",sep = ""))
 
 # load input and output objects into environment
-source(paste(vpdir,"src/05load_io.R",sep = ""))
+#source(paste(vpdir,"src/05load_io.R",sep = ""))
 
+# calculate loglikelihood of this parameter combination
+source(paste(vpdir,"src/05likelihood.R",sep=""))
 
-
-##########################################################
-# #git stuff - you only need to do this once
-# #install
-# https://help.github.com/desktop/guides/getting-started/installing-github-desktop/
-# 
-# # to clone this onto a machine with github installed
-# #navigate in the github shell to a directory where you have read/write privileges
-# #then from the directory above where you want to install the R source code:
-# git clone https://github.com/puruckertom/beeRpop.git
-# #####
-# 
-# #git stuff you have to do more often
-# #switch into that directory
-# cd beeRpop
-# #check status (you should be )
-# git status
-# #check for changes on this and other branches
-# git fetch
-# #checkout a different branch
-# git branch
-# git checkout andrew
-# 
-# #after making some changes and you want to push those changes to the cloud
-# git fetch
-# git pull
-# git commit -am "some explanatory message about what this commit was about"
 
 
 
