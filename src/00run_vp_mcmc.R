@@ -139,18 +139,22 @@ adult_pop_month1 <- floor(rnorm(10,4500,1000))
 #Run random walk Metropolis-Hastings MCMC
 
 #   0) Initial settings
-optimize_list <- c("ICQueenStrength","ICDroneMiteSurvivorship","ICWorkerMiteSurvivorship",
+optimize_list <- c("ICQueenStrength","IPollenTrips","INectarTrips",
                    "ICForagerLifespan","InitColNectar","InitColPollen")
-bound_l <- c(1,0,0,4,0,0) #lower bondary of the domain for each parameter to be optimized
-bound_u <- c(5,100,100,16,8000,8000) #upper bondary of the domain for each parameter to be optimized
+#   Notes: ICForagerLifespan appears to be converted to integer by removing decimal places in VP
+#          With default settings, ICWorkerMiteSurvivorship and ICDroneMiteSurvivorship having no effect
+
+bound_l <- c(1,4,4,4,0,0) #lower bondary of the domain for each parameter to be optimized
+bound_u <- c(5,30,48,16,8000,8000) #upper bondary of the domain for each parameter to be optimized
 scales <- (bound_u-bound_l)/10 #for now using the range divided by 10
 
-step_length <- .1 #For 6 dimensions, .1 is giving ~ .5 acceptance rate
+
+step_length <- .1 #ideal for 6 dimensions seems to be .1-.2 ? 
 nsims <- 20
 
-i <- 1 #counter for results and log files
 
 #   1) Randomly generate one set of parameters for the initial step
+i <- 1 #counter for results and log files
 source(paste(vpdir,"src/01parameterize_simulation.R",sep = "")) #generates inputdata_control, dataframe with parameter values
 
 static_params <- inputdata_control[,!(colnames(inputdata_control) %in% optimize_list)]
@@ -162,6 +166,7 @@ write_vp_input(inputdata_control[1,])
 
 #   3) Run VP simulation
 system.time(source(paste(vpdir,"src/03simulate_w_exe.R",sep = "")))
+
 
 #   4) Read outputs
 source(paste(vpdir,"src/04read_output.R",sep = ""))

@@ -20,14 +20,16 @@ inputdf<- data.frame(SimStart, SimEnd,stringsAsFactors=FALSE)
 ##base tab of https://docs.google.com/spreadsheets/d/1SG1aceXAoWoxFPag52y09zaYtvnkYH4gXVp9LXj1Yxw/edit#gid=0
 ICQueenStrength<- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, ICQueenStrength) #ICQueenStrength
 #RQWkrDrnRatio <- runif(Nsims, 1, 5) ; inputdf <- cbind(inputdf, RQWkrDrnRatio) #RQWkrDrnRatio
-ICDroneMiteSurvivorship <- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, ICDroneMiteSurvivorship) #ICDroneMiteSurvivorship
-ICWorkerMiteSurvivorship<- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, ICWorkerMiteSurvivorship) #ICWorkerMiteSurvivorship
+#ICDroneMiteSurvivorship <- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, ICDroneMiteSurvivorship) #ICDroneMiteSurvivorship
+#ICWorkerMiteSurvivorship<- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, ICWorkerMiteSurvivorship) #ICWorkerMiteSurvivorship
 ICForagerLifespan<- runif(Nsims, 4, 16) ; inputdf <- cbind(inputdf, ICForagerLifespan) #ICForagerLifespan
 #ForagerMaxProp <- runif(Nsims, 0, 1); inputdf <- cbind(inputdf, ForagerMaxProp) #IC active forager proportion
 #immtype <- c("Polynomial", "Cosine", "Sine", "Exponential", "Tangent", "Logarithmic")
 #miteimmtype <- sample(immtype, size=Nsims, replace=T) ; inputdf <- cbind(inputdf, miteimmtype) #ImmType
 #totalimmmites <- runif(Nsims, 0, 1000) ; inputdf <- cbind(inputdf, totalimmmites) #TotalImmMites
 #pctresistimmmites <- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, pctresistimmmites) #PctImmMitesResistant
+IPollenTrips <- runif(Nsims, 4, 30) ; inputdf <- cbind(inputdf, IPollenTrips) #IPollenTrips (per day)
+INectarTrips <- runif(Nsims, 4, 48) ; inputdf <- cbind(inputdf, INectarTrips) #INectarTrips (per day)
 InitColNectar<- runif(Nsims, 100, 8000) ; inputdf <- cbind(inputdf, InitColNectar)
 InitColPollen<- runif(Nsims, 100, 8000) ; inputdf <- cbind(inputdf, InitColPollen)
 #SupPollenEnable= Supplemental pollen feeding
@@ -100,8 +102,6 @@ InitColPollen<- runif(Nsims, 100, 8000) ; inputdf <- cbind(inputdf, InitColPolle
 # #cadnectar
 # #cforagerpollen
 # #cforagernectar
-# ptrips <- runif(Nsims, 4, 30) ; inputdf <- cbind(inputdf, ptrips) #IPollenTrips (per day)
-# ntrips <- runif(Nsims, 4, 48) ; inputdf <- cbind(inputdf, ntrips) #INectarTrips (per day)
 # #pctnectarfrgrs <- runif(Nsims, 0, 100) ; inputdf <- cbind(inputdf, pctnectarfrgrs) #IPercentNectarForagers
 # pload <- runif(Nsims, 4, 16) ; inputdf <- cbind(inputdf, pload) #IPollenLoad (mg/bee)
 # nload <- runif(Nsims, 30, 100) ; inputdf <- cbind(inputdf, nload) #INectarLoad (mg/bee)
