@@ -145,8 +145,8 @@ bound_l <- c(1,0,0,4,0,0) #lower bondary of the domain for each parameter to be 
 bound_u <- c(5,100,100,16,8000,8000) #upper bondary of the domain for each parameter to be optimized
 scales <- (bound_u-bound_l)/10 #for now using the range divided by 10
 
-step_length <- .05
-nsims <- 500
+step_length <- 1
+nsims <- 20
 
 i <- 1 #counter for results and log files
 
@@ -195,8 +195,8 @@ for(i in 2:nsims){
     source(paste(vpdir,"src/05likelihood.R",sep="")) #creates var "like" which holds the likelihood
     #print(paste("proposal: ",like))
     #print(paste("current: ",like_trace[i-1]))
-    
-    if((runif(1)) < (-like_trace[i-1])/(-like)){
+    if((runif(1)) < (exp(like)/exp(like_trace[i-1]))){
+    #if((runif(1)) < (-like_trace[i-1])/(-like)){
       inputdata_control <- rbind(inputdata_control,proposal_all,make.row.names=F)
       like_trace[i] <- like
     }
@@ -217,42 +217,18 @@ print("Final optimized parameters:")
 print(inputdata_control[nsims,optimize_list])
 
 
-##############################################################
-###############################################################
-
-
-
-
-
-
-
+#to save results of a run:
+#write.csv(inputdata_control, file = paste(vpdir_out_control, "inputdata_control_final.csv", sep = ""))
+#write.csv(like_trace, file = paste(vpdir_out_control, "likelihood_trace.csv", sep = ""))
 
 
 ##############################################################
 ###############################################################
-#run everything
-# define distributions for input parameters
-source(paste(vpdir,"src/01parameterize_simulation.R",sep = ""))
-
-#echo the first log file
-#scan(file = paste(vpdir_log, "log1.txt", sep=""), what = "raw")
-
-# create and save input text files for simulations
-source(paste(vpdir,"src/02write_input.R",sep = ""))
-
-#may need to turn off virus checker!
-# automate simulations for 'Nsims' number of simulations
-source(paste(vpdir,"src/03simulate_w_exe.R",sep = ""))
-
-# read text files and save results in 3d arrays
-source(paste(vpdir,"src/04read_output.R",sep = ""))
-
-# load input and output objects into environment
-#source(paste(vpdir,"src/05load_io.R",sep = ""))
-
-# calculate loglikelihood of this parameter combination
-source(paste(vpdir,"src/05likelihood.R",sep=""))
 
 
+#Note: move below to a post-processing script
 
+accept_rate <- length(unique(like_trace[,1]))/length(like_trace[,1])
+hist(inputdata_control$ICForagerLifespan[3000:10000])
+hist(inputdata_control$ICQueenStrength[3000:10000])
 
