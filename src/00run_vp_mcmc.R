@@ -145,7 +145,7 @@ bound_l <- c(1,0,0,4,0,0) #lower bondary of the domain for each parameter to be 
 bound_u <- c(5,100,100,16,8000,8000) #upper bondary of the domain for each parameter to be optimized
 scales <- (bound_u-bound_l)/10 #for now using the range divided by 10
 
-step_length <- 1
+step_length <- .1 #For 6 dimensions, .1 is giving ~ .5 acceptance rate
 nsims <- 20
 
 i <- 1 #counter for results and log files
@@ -195,8 +195,8 @@ for(i in 2:nsims){
     source(paste(vpdir,"src/05likelihood.R",sep="")) #creates var "like" which holds the likelihood
     #print(paste("proposal: ",like))
     #print(paste("current: ",like_trace[i-1]))
-    if((runif(1)) < (exp(like)/exp(like_trace[i-1]))){
-    #if((runif(1)) < (-like_trace[i-1])/(-like)){
+    if(log(runif(1)) < (like-like_trace[i-1])){
+    #if((runif(1)) < (exp(like)/exp(like_trace[i-1]))){
       inputdata_control <- rbind(inputdata_control,proposal_all,make.row.names=F)
       like_trace[i] <- like
     }
@@ -228,7 +228,7 @@ print(inputdata_control[nsims,optimize_list])
 
 #Note: move below to a post-processing script
 
-accept_rate <- length(unique(like_trace[,1]))/length(like_trace[,1])
+accept_rate <- length(unique(like_trace))/length(like_trace)
 hist(inputdata_control$ICForagerLifespan[3000:10000])
 hist(inputdata_control$ICQueenStrength[3000:10000])
 
