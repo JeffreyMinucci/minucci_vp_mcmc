@@ -155,13 +155,15 @@ nsims <- 20
 
 #   1) Randomly generate one set of parameters for the initial step
 i <- 1 #counter for results and log files
-source(paste(vpdir,"src/01parameterize_simulation.R",sep = "")) #generates inputdata_control, dataframe with parameter values
+source(paste(vpdir,"src/01parameterize_simulation.R",sep = "")) 
+inputdata <- generate_vpstart(SimStart,SimEnd, optimize_list, bound_l, bound_u,verbose=T) 
+#generates 1 row dataframe with starting parameter values
 
-static_params <- inputdata_control[,!(colnames(inputdata_control) %in% optimize_list)]
+static_params <- inputdata[,!(colnames(inputdata) %in% optimize_list)]
 
 #   2) Write VP inputs
 source(paste(vpdir,"src/02write_input.R",sep = "")) #load write input function
-write_vp_input(inputdata_control[1,])
+write_vp_input(inputdata[1,])
 
 
 #   3) Run VP simulation
@@ -190,7 +192,7 @@ source(paste(vpdir,"src/06propose_mh_step.R",sep=""))
 
 for(i in 2:nsims){
   print(paste("MCMC step: ",i-1," log-likelihood: ",like_trace[i-1]))
-  proposal <- metropolis_proposal(inputdata_control[i-1,optimize_list],scales,step_length)
+  proposal <- metropolis_proposal(inputdata[i-1,optimize_list],scales,step_length)
   proposal_all <- cbind(static_params,proposal)
   write_vp_input(proposal_all)
   if(!(any(proposal > bound_u) | any((proposal < bound_l)))){
@@ -202,28 +204,28 @@ for(i in 2:nsims){
     #print(paste("current: ",like_trace[i-1]))
     if(log(runif(1)) < (like-like_trace[i-1])){
     #if((runif(1)) < (exp(like)/exp(like_trace[i-1]))){
-      inputdata_control <- rbind(inputdata_control,proposal_all,make.row.names=F)
+      inputdata <- rbind(inputdata,proposal_all,make.row.names=F)
       like_trace[i] <- like
     }
     else{
       print(paste("Rejecting log-likelihood: ",like))
-      inputdata_control <- rbind(inputdata_control,inputdata_control[i-1,],make.row.names=F)
+      inputdata <- rbind(inputdata,inputdata[i-1,],make.row.names=F)
       like_trace[i] <- like_trace[i-1]
     }
   }
   else{
     print("Proposal out of bounds!")
-    inputdata_control <- rbind(inputdata_control,inputdata_control[i-1,],make.row.names=F)
+    inputdata <- rbind(inputdata,inputdata[i-1,],make.row.names=F)
     like_trace[i] <- like_trace[i-1]
   }
 }
 print(paste("MCMC run completed. Final log-likelihood: ",like_trace[nsims]))
 print("Final optimized parameters:")
-print(inputdata_control[nsims,optimize_list])
+print(inputdata[nsims,optimize_list])
 
 
 #to save results of a run:
-#write.csv(inputdata_control, file = paste(vpdir_out_control, "inputdata_control_final.csv", sep = ""))
+#write.csv(inputdata, file = paste(vpdir_out_control, "inputdata_final.csv", sep = ""))
 #write.csv(like_trace, file = paste(vpdir_out_control, "likelihood_trace.csv", sep = ""))
 
 
@@ -234,6 +236,6 @@ print(inputdata_control[nsims,optimize_list])
 #Note: move below to a post-processing script
 
 accept_rate <- length(unique(like_trace))/length(like_trace)
-hist(inputdata_control$ICForagerLifespan[3000:10000])
-hist(inputdata_control$ICQueenStrength[3000:10000])
+hist(inputdata$ICForagerLifespan[3000:10000])
+hist(inputdata$ICQueenStrength[3000:10000])
 
