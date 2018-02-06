@@ -3,7 +3,7 @@
 #
 # author: Jeffrey Minucci
 # 
-# VarroaPop wrapper code adapted from C. Kuan and K. Garber*
+# note: some VarroaPop wrapper code adapted from Carmen Kuan 
 #
 # Description: code to parameterize VarroaPop+Pesticide model using RARE pollen field data
 #              and metropolis-hastings MCMC 
@@ -37,14 +37,8 @@
 ## Check dependencies and versions
 ## 
 
-
-
-# install current version of R
-
-# install current version of RStudio
-
 #check to make sure required packages are installed
-list.of.packages <- c("plyr", "dplyr", "reshape2", "ggplot2", "grid", "gridExtra", "sensitivity", "abind", 
+list.of.packages <- c("plyr", "dplyr", "reshape2", "ggplot2", "grid", "gridExtra", "abind", 
                       "ppcor")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)>0) {install.packages(new.packages)}
@@ -60,10 +54,10 @@ library(abind)
 library(dplyr)
 
 #echo environment
-Sys.info()
-Sys.info()[4]
-.Platform
-version
+#Sys.info()
+#Sys.info()[4]
+#.Platform
+#version
 
 #Determine path directory based on the user machine######
 #jeff epa dev machine
@@ -75,28 +69,10 @@ if(Sys.info()[4]=="DZ2626UJMINUCCI"){
 
 #tom epa windows 2
 if(Sys.info()[4]=="DZ2626UTPURUCKE"){
-  vpdir<-path.expand("k:/git/garber_vp/")
-  vpdir2<-path.expand("k:/git/garber_vp/")
+  vpdir<-path.expand("k:/git/minucci_vp_mcmc/")
   # varroapop file (without directory, the file needs to be in vpdir_exe above)
-  vrp_filename <- "comparison_stp_epa_windows_kdrive_garber.vrp"
+  vrp_filename <- "default_tom.vrp" #will need to be generated from default_jeff.vrp with pointer to Tom's weather file location
 }
-#tom mac air
-if(Sys.info()[4]=="stp-air"){
-  vpdir<-path.expand("~/git/garber_vp/")
-}
-#andrew epa
-if(Sys.info()[4]=="LZ2032EAKANAREK"){
-  vpdir <- path.expand("C:/Users/AKanarek/Documents/GitHub/garber_vp/")
-  # varroapop file (without directory, the file needs to be in vpdir_exe above)
-  vrp_filename <- "comparison.vrp"
-} 
-#kris epa
-if(Sys.info()[4]==""){
-  vpdir <- path.expand("C:/Users/AKanarek/Documents/GitHub/garber_vp/")
-  # varroapop file (without directory, the file needs to be in vpdir_exe above)
-  vrp_filename <- "comparison.vrp"
-} 
-
 
 
 
@@ -117,7 +93,6 @@ vpdir_weather <- paste(vpdir, "data/external/weather/", sep = "")
 #varroapop executable version
 vp_binary <- "VarroaPop.exe"
 vpdir_executable <- paste(vpdir_exe, vp_binary, sep="")
-#vpdir2_executable <- paste(vpdir2, vp_binary, sep="")
 
 #number of vp runs per iteration (will be 1 until multiple pesticide load scenarios are implemented) 
 Nsims <- 1
@@ -138,7 +113,7 @@ adult_pop_month1 <- floor(rnorm(10,4500,1000))
 ###############################################################
 #Run random walk Metropolis-Hastings MCMC
 
-#   0) Initial settings
+####   0) Initial settings
 optimize_list <- c("ICQueenStrength","IPollenTrips","INectarTrips",
                    "ICForagerLifespan","InitColNectar","InitColPollen")
 #   Notes: ICForagerLifespan appears to be converted to integer by removing decimal places in VP
@@ -149,42 +124,46 @@ bound_u <- c(5,30,48,16,8000,8000) #upper bondary of the domain for each paramet
 scales <- (bound_u-bound_l)/10 #for now using the range divided by 10
 
 
-step_length <- .1 #ideal for 6 dimensions seems to be .1-.2 ? 
-nsims <- 20
+step_length <- .2 #ideal for 6 dimensions seems to be around .2 ? 
+nsims <- 50
+verbose=T
+debug=F
 
 
-#   1) Randomly generate one set of parameters for the initial step
+###   1) Randomly generate one set of parameters for the initial step
 i <- 1 #counter for results and log files
 source(paste(vpdir,"src/01parameterize_simulation.R",sep = "")) 
-inputdata <- generate_vpstart(SimStart,SimEnd, optimize_list, bound_l, bound_u,verbose=T) 
+inputdata <- generate_vpstart(SimStart,SimEnd, optimize_list, bound_l, bound_u,verbose) 
 #generates 1 row dataframe with starting parameter values
 
 static_params <- inputdata[,!(colnames(inputdata) %in% optimize_list)]
 
-#   2) Write VP inputs
-source(paste(vpdir,"src/02write_input.R",sep = "")) #load write input function
+###   2) Write VP inputs
+system.time(source(paste(vpdir,"src/02write_input.R",sep = ""))) #load write input function
 write_vp_input(inputdata[1,])
 
 
-#   3) Run VP simulation
+###   3) Run VP simulation
 system.time(source(paste(vpdir,"src/03simulate_w_exe.R",sep = "")))
 
 
-#   4) Read outputs
-source(paste(vpdir,"src/04read_output.R",sep = ""))
+###   4) Read outputs
+system.time(source(paste(vpdir,"src/04read_output.R",sep = "")))
 
 
-#   5) Calculate likelihood of field data (colony size - adults) given these parameters
+###   5) Calculate likelihood of field data (colony size - adults) given these parameters
 source(paste(vpdir,"src/05likelihood.R",sep="")) #creates var "like" which holds the likelihood
+var_est <- var(adult_pop_month1) #for now get var from actual data
+like <- vp_loglik_simple(adult_pop_month1,tdarray_control[30,1,1],var_est)
 like_trace<- rep(0,nsims)
 like_trace[1] <- like
 
 
-#   Repeat Nsims:
-#   6) Generate new proposal parameters
-#   7) Repeat steps 3-6 for proposal
-#      Accept proposal as new state with probabliliy likelihood(proposal)/likelihood(current)
-#      Return to 6
+###  Repeat nsims:
+###  6) Generate new proposal parameters
+###  7) Repeat steps 3-6 for proposal
+###      Accept proposal as new state with probabliliy likelihood(proposal)/likelihood(current)
+###      Return to 6
 
 
 #load functions
@@ -196,32 +175,34 @@ for(i in 2:nsims){
   proposal_all <- cbind(static_params,proposal)
   write_vp_input(proposal_all)
   if(!(any(proposal > bound_u) | any((proposal < bound_l)))){
-    
     source(paste(vpdir,"src/03simulate_w_exe.R",sep = "")) #run sim for proposal  
-    source(paste(vpdir,"src/04read_output.R",sep = ""))
-    source(paste(vpdir,"src/05likelihood.R",sep="")) #creates var "like" which holds the likelihood
-    #print(paste("proposal: ",like))
-    #print(paste("current: ",like_trace[i-1]))
+    source(paste(vpdir,"src/04read_output.R",sep = ""))    #read output into tdarray_control
+    like <- vp_loglik_simple(adult_pop_month1,tdarray_control[30,1,1],var_est) #calc likelihood
+    if(debug){
+      print(paste("proposal: ",like))
+      print(paste("current: ",like_trace[i-1]))
+    }
     if(log(runif(1)) < (like-like_trace[i-1])){
-    #if((runif(1)) < (exp(like)/exp(like_trace[i-1]))){
       inputdata <- rbind(inputdata,proposal_all,make.row.names=F)
       like_trace[i] <- like
     }
     else{
-      print(paste("Rejecting log-likelihood: ",like))
+      if(verbose) print(paste("Rejecting log-likelihood: ",like))
       inputdata <- rbind(inputdata,inputdata[i-1,],make.row.names=F)
       like_trace[i] <- like_trace[i-1]
     }
   }
   else{
-    print("Proposal out of bounds!")
+    if(verbose) print("Proposal out of bounds!")
     inputdata <- rbind(inputdata,inputdata[i-1,],make.row.names=F)
     like_trace[i] <- like_trace[i-1]
   }
 }
-print(paste("MCMC run completed. Final log-likelihood: ",like_trace[nsims]))
-print("Final optimized parameters:")
-print(inputdata[nsims,optimize_list])
+if(verbose){
+  print(paste("MCMC run completed. Final log-likelihood: ",like_trace[nsims]))
+  print("Final optimized parameters:")
+  print(inputdata[nsims,optimize_list])
+}
 
 
 #to save results of a run:
@@ -238,4 +219,6 @@ print(inputdata[nsims,optimize_list])
 accept_rate <- length(unique(like_trace))/length(like_trace)
 hist(inputdata$ICForagerLifespan[3000:10000])
 hist(inputdata$ICQueenStrength[3000:10000])
+
+MCMCtrace(as.matrix(inputdata[, optimize_list]))
 

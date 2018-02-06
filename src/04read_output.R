@@ -38,18 +38,4 @@ for (j in 1:Nsims) {
 #save(tdarray_control, file = paste(vpdir_out_control,"tdarray_control.RData", se = ""))
 #rm(tdarray_control)
 
-# 
-# #neonic
-# tdarray_neonic <- array(data=NA, c(nrows,ncols-1,Nsims))
-# dim(tdarray_neonic)
-# for (i in 1:Nsims) {
-#   df <- read.table(paste(vpdir_out_neonic,"results",i,".txt", sep=""), header= FALSE, sep= "", 
-#                    skip = 6, stringsAsFactors = FALSE, row.names=NULL)
-#   newarray <- df[,2:ncols]
-#   tdarray_neonic[1:nrows,1:(ncols-1),i] <- abind(newarray[1:nrows,1:(ncols-1)], along=3)
-# }
-# save(tdarray_neonic, file = paste(vpdir_out_neonic,"tdarray_neonic.RData", sep = ""))
-# rm(tdarray_neonic)
-
-
 if(i==1) save(timearray,file = paste(vpdir_output,"timearray.RData", sep = ""))
