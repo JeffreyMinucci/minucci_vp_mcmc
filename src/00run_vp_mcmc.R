@@ -33,11 +33,9 @@
 
 
 
-
 ## Check dependencies and versions
 ## 
 
-#check to make sure required packages are installed
 list.of.packages <- c("plyr", "dplyr", "reshape2", "ggplot2", "grid", "gridExtra", "abind", 
                       "ppcor")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -52,12 +50,6 @@ library(gridExtra)
 library(sensitivity)
 library(abind)
 library(dplyr)
-
-#echo environment
-#Sys.info()
-#Sys.info()[4]
-#.Platform
-#version
 
 #Determine path directory based on the user machine######
 #jeff epa dev machine
@@ -90,6 +82,9 @@ vpdir_out_control <- paste(vpdir_output, "control/", sep = "")
 vpdir_out_neonic <- paste(vpdir_output, "neonic/", sep = "")
 vpdir_weather <- paste(vpdir, "data/external/weather/", sep = "")
 
+#path field data on bee population
+vp_field_data <- paste(vpdir,"data/raw/field_bee_areas.csv",sep="")
+
 #varroapop executable version
 vp_binary <- "VarroaPop.exe"
 vpdir_executable <- paste(vpdir_exe, vp_binary, sep="")
@@ -102,11 +97,15 @@ Nsims <- 1
 
 #simulation start and end
 #must have mm/dd/yyyy format
-SimStart<- "5/20/1999"
-SimEnd <- "6/29/1999"
+SimStart<- "4/30/1999"
+SimEnd <- "8/25/1999"
 
-#Create hypothetical field data (replace with real data when available)
-adult_pop_month1 <- floor(rnorm(10,4500,1000))
+#read field data
+field_data <- read.csv(vp_field_data)
+bees_per_cm2 <- 1 #convert area of bees to individuals  
+bee_pops <- as.matrix(field_data[,c("bees_cm2_4","bees_cm2_5","bees_cm2_6","bees_cm2_8")]) * bees_per_cm2 
+#NOTE: need to consider hive that split
+#ballpark times: t1 = 5/21, t2 = 6/23, t4 = 8/18
 
 
 ##############################################################
@@ -124,7 +123,7 @@ bound_u <- c(5,30,48,16,8000,8000) #upper bondary of the domain for each paramet
 scales <- (bound_u-bound_l)/10 #for now using the range divided by 10
 
 
-step_length <- .2 #ideal for 6 dimensions seems to be around .2 ? 
+step_length <- .25 #ideal for 6 dimensions seems to be around .25? 
 nsims <- 50
 verbose=T
 debug=F
@@ -154,7 +153,8 @@ system.time(source(paste(vpdir,"src/04read_output.R",sep = "")))
 ###   5) Calculate likelihood of field data (colony size - adults) given these parameters
 source(paste(vpdir,"src/05likelihood.R",sep="")) #creates var "like" which holds the likelihood
 var_est <- var(adult_pop_month1) #for now get var from actual data
-like <- vp_loglik_simple(adult_pop_month1,tdarray_control[30,1,1],var_est)
+#like <- vp_loglik_simple(adult_pop_month1,tdarray_control[24,1,1],var_est)
+like <- vp_loglik_dates(bee_pops,tdarray_control[c(24,56,112),1,1],var_est)
 like_trace<- rep(0,nsims)
 like_trace[1] <- like
 
@@ -177,7 +177,8 @@ for(i in 2:nsims){
   if(!(any(proposal > bound_u) | any((proposal < bound_l)))){
     source(paste(vpdir,"src/03simulate_w_exe.R",sep = "")) #run sim for proposal  
     source(paste(vpdir,"src/04read_output.R",sep = ""))    #read output into tdarray_control
-    like <- vp_loglik_simple(adult_pop_month1,tdarray_control[30,1,1],var_est) #calc likelihood
+    #like <- vp_loglik_simple(adult_pop_month1,tdarray_control[24,1,1],var_est) #calc likelihood
+    like <- vp_loglik_dates(bee_pops,tdarray_control[c(24,56,112),1,1],var_est) #calc likelihood
     if(debug){
       print(paste("proposal: ",like))
       print(paste("current: ",like_trace[i-1]))
@@ -217,8 +218,8 @@ if(verbose){
 #Note: move below to a post-processing script
 
 accept_rate <- length(unique(like_trace))/length(like_trace)
-hist(inputdata$ICForagerLifespan[3000:10000])
-hist(inputdata$ICQueenStrength[3000:10000])
+#hist(inputdata$ICForagerLifespan[3000:10000])
+#hist(inputdata$ICQueenStrength[3000:10000])
 
-MCMCtrace(as.matrix(inputdata[, optimize_list]))
+MCMCtrace(as.matrix(inputdata[, optimize_list]),filename="test", wd=paste(vpdir,"reports/figures/",sep=""))
 
