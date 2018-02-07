@@ -12,13 +12,16 @@
 # function to randomly generate an MCMC starting point - with uniform distribution
 # parameters:
 
-generate_vpstart <- function(sim_start, sim_end, to_optimize, lower, upper, verbose=FALSE){
+generate_vpstart <- function(static_names, static_vals, to_optimize, lower, upper, verbose=FALSE){
   if(!(length(to_optimize) == length(upper) & length(to_optimize)==length(lower))){
     stop("Vectors of parameter names and their bounds are not the same length!")
   }
+  if(length(static_names) != length(static_vals)){
+    stop("Vectors of static param names and their values are not the same length!")
+  }
   values <- runif(length(to_optimize),lower,upper)
-  inputdf <- data.frame(SimStart= sim_start, SimEnd = sim_end,t(values),stringsAsFactors = FALSE)
-  colnames(inputdf) <- c("SimStart","SimEnd",to_optimize)
+  inputdf <- data.frame(t(static_vals), t(values),stringsAsFactors = FALSE)
+  colnames(inputdf) <- c(static_names,to_optimize)
   if(verbose){
     print("Starting point:")
     print(inputdf)

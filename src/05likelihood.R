@@ -25,7 +25,6 @@ vp_loglik_simple <- function(actual,pred,var){
 #        var - a single variance term (for now calculate from one month's data)
 vp_loglik_dates <- function(actual,pred,var){
   residuals <- c(actual[,1]-pred[1],actual[,2]-pred[2],actual[,3]-pred[3])
-  print(residuals)
   ll <- (length(actual)/-2)*log(2*pi) - (length(actual)/2)*log(var)- (1/(2*var)) * sum(residuals^2)
   return(ll)
 }

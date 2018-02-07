@@ -103,11 +103,17 @@ SimEnd <- "8/25/1999"
 #read field data
 field_data <- read.csv(vp_field_data)
 bees_per_cm2 <- 1 #convert area of bees to individuals  
-bee_pops <- as.matrix(field_data[,c("bees_cm2_4","bees_cm2_5","bees_cm2_6","bees_cm2_8")]) * bees_per_cm2 
+bee_pops <- as.matrix(field_data[,c("bees_cm2_5","bees_cm2_6","bees_cm2_8")]) * bees_per_cm2 
+bee_initial <- field_data[,c("bees_cm2_4")] * bees_per_cm2
 #NOTE: need to consider hive that split
 #ballpark times: t1 = 5/21, t2 = 6/23, t4 = 8/18
 
+#starting bee pop 
+ICWorkerAdults = mean(bee_initial)
 
+#static parameter list
+static_names <- c("SimStart","SimEnd","ICWorkerAdults")
+static_values <- c(SimStart,SimEnd,ICWorkerAdults)
 ##############################################################
 ###############################################################
 #Run random walk Metropolis-Hastings MCMC
@@ -124,7 +130,7 @@ scales <- (bound_u-bound_l)/10 #for now using the range divided by 10
 
 
 step_length <- .25 #ideal for 6 dimensions seems to be around .25? 
-nsims <- 50
+nsims <- 15000
 verbose=T
 debug=F
 
@@ -132,7 +138,8 @@ debug=F
 ###   1) Randomly generate one set of parameters for the initial step
 i <- 1 #counter for results and log files
 source(paste(vpdir,"src/01parameterize_simulation.R",sep = "")) 
-inputdata <- generate_vpstart(SimStart,SimEnd, optimize_list, bound_l, bound_u,verbose) 
+inputdata <- generate_vpstart(static_names, static_values,
+                              optimize_list, bound_l, bound_u, verbose) 
 #generates 1 row dataframe with starting parameter values
 
 static_params <- inputdata[,!(colnames(inputdata) %in% optimize_list)]
@@ -153,8 +160,8 @@ system.time(source(paste(vpdir,"src/04read_output.R",sep = "")))
 ###   5) Calculate likelihood of field data (colony size - adults) given these parameters
 source(paste(vpdir,"src/05likelihood.R",sep="")) #creates var "like" which holds the likelihood
 var_est <- var(adult_pop_month1) #for now get var from actual data
-#like <- vp_loglik_simple(adult_pop_month1,tdarray_control[24,1,1],var_est)
-like <- vp_loglik_dates(bee_pops,tdarray_control[c(24,56,112),1,1],var_est)
+#like <- vp_loglik_simple(adult_pop_month1,tdarray_control[24,3,1],var_est)
+like <- vp_loglik_dates(bee_pops,tdarray_control[c(24,56,112),3,1],var_est)
 like_trace<- rep(0,nsims)
 like_trace[1] <- like
 
@@ -177,8 +184,8 @@ for(i in 2:nsims){
   if(!(any(proposal > bound_u) | any((proposal < bound_l)))){
     source(paste(vpdir,"src/03simulate_w_exe.R",sep = "")) #run sim for proposal  
     source(paste(vpdir,"src/04read_output.R",sep = ""))    #read output into tdarray_control
-    #like <- vp_loglik_simple(adult_pop_month1,tdarray_control[24,1,1],var_est) #calc likelihood
-    like <- vp_loglik_dates(bee_pops,tdarray_control[c(24,56,112),1,1],var_est) #calc likelihood
+    #like <- vp_loglik_simple(adult_pop_month1,tdarray_control[24,3,1],var_est) #calc likelihood
+    like <- vp_loglik_dates(bee_pops,tdarray_control[c(24,56,112),3,1],var_est) #calc likelihood
     if(debug){
       print(paste("proposal: ",like))
       print(paste("current: ",like_trace[i-1]))
@@ -207,8 +214,8 @@ if(verbose){
 
 
 #to save results of a run:
-#write.csv(inputdata, file = paste(vpdir_out_control, "inputdata_final.csv", sep = ""))
-#write.csv(like_trace, file = paste(vpdir_out_control, "likelihood_trace.csv", sep = ""))
+write.csv(inputdata, file = paste(vpdir_out_control, "inputdata_final.csv", sep = ""))
+write.csv(like_trace, file = paste(vpdir_out_control, "likelihood_trace.csv", sep = ""))
 
 
 ##############################################################
