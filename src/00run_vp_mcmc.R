@@ -114,6 +114,8 @@ ICWorkerAdults = mean(bee_initial)
 #static parameter list
 static_names <- c("SimStart","SimEnd","ICWorkerAdults")
 static_values <- c(SimStart,SimEnd,ICWorkerAdults)
+
+
 ##############################################################
 ###############################################################
 #Run random walk Metropolis-Hastings MCMC
