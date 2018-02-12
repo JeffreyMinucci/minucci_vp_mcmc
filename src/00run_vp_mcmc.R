@@ -163,7 +163,7 @@ system.time(source(paste(vpdir,"src/04read_output.R",sep = "")))
 source(paste(vpdir,"src/05likelihood.R",sep="")) #creates var "like" which holds the likelihood
 var_est <- var(adult_pop_month1) #for now get var from actual data
 #like <- vp_loglik_simple(adult_pop_month1,tdarray_control[24,3,1],var_est)
-like <- vp_loglik_dates(bee_pops,tdarray_control[c(24,56,112),3,1],var_est)
+like <- vp_loglik_dates(bee_pops,rowSums(tdarray_control[c(24,56,112),c(2:4),1]),var_est)
 like_trace<- rep(0,nsims)
 like_trace[1] <- like
 
@@ -187,7 +187,7 @@ for(i in 2:nsims){
     source(paste(vpdir,"src/03simulate_w_exe.R",sep = "")) #run sim for proposal  
     source(paste(vpdir,"src/04read_output.R",sep = ""))    #read output into tdarray_control
     #like <- vp_loglik_simple(adult_pop_month1,tdarray_control[24,3,1],var_est) #calc likelihood
-    like <- vp_loglik_dates(bee_pops,tdarray_control[c(24,56,112),3,1],var_est) #calc likelihood
+    like <- vp_loglik_dates(bee_pops,rowSums(tdarray_control[c(24,56,112),c(2:4),1]),var_est) #calc likelihood
     if(debug){
       print(paste("proposal: ",like))
       print(paste("current: ",like_trace[i-1]))
@@ -216,8 +216,8 @@ if(verbose){
 
 
 #to save results of a run:
-write.csv(inputdata, file = paste(vpdir_out_control, "inputdata_final.csv", sep = ""))
-write.csv(like_trace, file = paste(vpdir_out_control, "likelihood_trace.csv", sep = ""))
+#write.csv(inputdata, file = paste(vpdir_out_control, "inputdata_final.csv", sep = ""))
+#write.csv(like_trace, file = paste(vpdir_out_control, "likelihood_trace.csv", sep = ""))
 
 
 ##############################################################
@@ -230,5 +230,8 @@ accept_rate <- length(unique(like_trace))/length(like_trace)
 #hist(inputdata$ICForagerLifespan[3000:10000])
 #hist(inputdata$ICQueenStrength[3000:10000])
 
+library(MCMCvis)
 MCMCtrace(as.matrix(inputdata[, optimize_list]),filename="test", wd=paste(vpdir,"reports/figures/",sep=""))
+MCMCtrace(as.matrix(inputdata[, optimize_list]),filename="test_fulltrace",
+          iter=15000,wd=paste(vpdir,"reports/figures/",sep=""))
 
