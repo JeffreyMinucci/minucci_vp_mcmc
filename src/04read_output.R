@@ -1,7 +1,7 @@
 # load up varroapop data into a 3d array dataframe ######
 
 
-
+Nsims <- 10 #number of results files (sites) per MCMC iteration
 if(i==1){
   df <- read.table(paste(vpdir_out_control,"results",i,".txt", sep=""), header= FALSE, sep= "", 
                    skip = 6, stringsAsFactors = FALSE, row.names=NULL)
@@ -30,7 +30,7 @@ if(i==1){
 tdarray_control <- array(data=NA, c(nrows,ncols-1,Nsims))
 dim(tdarray_control)
 for (j in 1:Nsims) {
-  df <- read.table(paste(vpdir_out_control,"results",i,".txt", sep=""), header= FALSE, sep= "", 
+  df <- read.table(paste(vpdir_out_control,"results",i,"_",j,".txt", sep=""), header= FALSE, sep= "", 
                   skip = 6, stringsAsFactors = FALSE, row.names=NULL, col.names = outvar)
   newarray <- df[,2:ncols]
   tdarray_control[1:nrows,1:(ncols-1),j] <- abind(newarray[1:nrows,1:(ncols-1)], along=3)

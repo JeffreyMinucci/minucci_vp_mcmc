@@ -92,8 +92,6 @@ vp_field_initials <- paste(vpdir,"data/raw/field_initial_conditions.csv",sep="")
 vp_binary <- "VarroaPop.exe"
 vpdir_executable <- paste(vpdir_exe, vp_binary, sep="")
 
-#number of vp runs per iteration (will be 1 until multiple pesticide load scenarios are implemented) 
-Nsims <- 1
 
 #weather file - not sure if this variable is doing anything 
 #WeatherFileName <- "Midwest5Yr.wth"
@@ -142,6 +140,11 @@ nsims <- 15000
 verbose=T
 debug=F
 
+#parallel back end
+if(Sys.info()[4]=="DZ2626UJMINUCCI") cores<-10 else cores<-3
+cl <- makeCluster(cores)
+registerDoParallel(cl)
+
 
 ###   1) Randomly generate one set of parameters for the initial step
 i <- 1 #counter for results and log files
@@ -159,7 +162,7 @@ write_vp_input_sites(inputdata[1,])
 
 
 ###   3) Run VP simulation
-system.time(source(paste(vpdir,"src/03simulate_w_exe.R",sep = "")))
+system.time(source(paste(vpdir,"src/03simulate_w_exe_parallel.R",sep = "")))
 
 
 ###   4) Read outputs
@@ -168,9 +171,11 @@ system.time(source(paste(vpdir,"src/04read_output.R",sep = "")))
 
 ###   5) Calculate likelihood of field data (colony size - adults) given these parameters
 source(paste(vpdir,"src/05likelihood.R",sep="")) #creates var "like" which holds the likelihood
-var_est <- var(adult_pop_month1) #for now get var from actual data
+var_est <- mean(c(var(bee_initial),var(bee_pops[,1]),var(bee_pops[,2]),var(bee_pops[,3]))) #for now get var from actual data
 #like <- vp_loglik_simple(adult_pop_month1,tdarray_control[24,3,1],var_est)
-like <- vp_loglik_dates(bee_pops,rowSums(tdarray_control[c(24,56,112),c(2:4),1]),var_est)
+#like <- vp_loglik_dates(bee_pops,rowSums(tdarray_control[c(24,56,112),c(2:4),1]),var_est)
+like <- vp_loglik_sites(bee_pops,t(sapply(1:dim(tdarray_control)[3],
+                                          function(x) rowSums(tdarray_control[c(24,56,112),c(2:4),x]))),var_est,debug=T)
 like_trace<- rep(0,nsims)
 like_trace[1] <- like
 
@@ -189,12 +194,14 @@ for(i in 2:nsims){
   print(paste("MCMC step: ",i-1," log-likelihood: ",like_trace[i-1]))
   proposal <- metropolis_proposal(inputdata[i-1,optimize_list],scales,step_length)
   proposal_all <- cbind(static_params,proposal)
-  write_vp_input(proposal_all)
+  write_vp_input_sites(proposal_all)
   if(!(any(proposal > bound_u) | any((proposal < bound_l)))){
-    source(paste(vpdir,"src/03simulate_w_exe.R",sep = "")) #run sim for proposal  
+    source(paste(vpdir,"src/03simulate_w_exe_parallel.R",sep = "")) #run sim for proposal  
     source(paste(vpdir,"src/04read_output.R",sep = ""))    #read output into tdarray_control
     #like <- vp_loglik_simple(adult_pop_month1,tdarray_control[24,3,1],var_est) #calc likelihood
-    like <- vp_loglik_dates(bee_pops,rowSums(tdarray_control[c(24,56,112),c(2:4),1]),var_est) #calc likelihood
+    #like <- vp_loglik_dates(bee_pops,rowSums(tdarray_control[c(24,56,112),c(2:4),1]),var_est) #calc likelihood
+    like <- vp_loglik_sites(bee_pops,t(sapply(1:dim(tdarray_control)[3],
+                                              function(x) rowSums(tdarray_control[c(24,56,112),c(2:4),x]))),var_est)
     if(debug){
       print(paste("proposal: ",like))
       print(paste("current: ",like_trace[i-1]))
