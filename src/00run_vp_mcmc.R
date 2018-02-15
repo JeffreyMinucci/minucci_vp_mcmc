@@ -85,6 +85,9 @@ vpdir_weather <- paste(vpdir, "data/external/weather/", sep = "")
 #path field data on bee population
 vp_field_data <- paste(vpdir,"data/raw/field_bee_areas.csv",sep="")
 
+#path field data on bee initial conditions
+vp_field_initials <- paste(vpdir,"data/raw/field_initial_conditions.csv",sep="")
+
 #varroapop executable version
 vp_binary <- "VarroaPop.exe"
 vpdir_executable <- paste(vpdir_exe, vp_binary, sep="")
@@ -102,18 +105,21 @@ SimEnd <- "8/25/1999"
 
 #read field data
 field_data <- read.csv(vp_field_data)
-bees_per_cm2 <- 1 #convert area of bees to individuals  
+bees_per_cm2 <- 1  #convert area of bees to individuals  
 bee_pops <- as.matrix(field_data[,c("bees_cm2_5","bees_cm2_6","bees_cm2_8")]) * bees_per_cm2 
 bee_initial <- field_data[,c("bees_cm2_4")] * bees_per_cm2
 #NOTE: need to consider hive that split
 #ballpark times: t1 = 5/21, t2 = 6/23, t4 = 8/18
+#NOTE: include exact dates when evaluating each site
 
 #starting bee pop 
 ICWorkerAdults = mean(bee_initial)
 
 #static parameter list
-static_names <- c("SimStart","SimEnd","ICWorkerAdults")
-static_values <- c(SimStart,SimEnd,ICWorkerAdults)
+#static_names <- c("SimStart","SimEnd","ICWorkerAdults")
+#static_values <- c(SimStart,SimEnd,ICWorkerAdults)
+static_names <- c("SimStart","SimEnd")
+static_values <- c(SimStart,SimEnd)
 
 
 ##############################################################
@@ -122,12 +128,12 @@ static_values <- c(SimStart,SimEnd,ICWorkerAdults)
 
 ####   0) Initial settings
 optimize_list <- c("ICQueenStrength","IPollenTrips","INectarTrips",
-                   "ICForagerLifespan","InitColNectar","InitColPollen")
+                   "ICForagerLifespan")
 #   Notes: ICForagerLifespan appears to be converted to integer by removing decimal places in VP
 #          With default settings, ICWorkerMiteSurvivorship and ICDroneMiteSurvivorship having no effect
 
-bound_l <- c(1,4,4,4,0,0) #lower bondary of the domain for each parameter to be optimized
-bound_u <- c(5,30,48,16,8000,8000) #upper bondary of the domain for each parameter to be optimized
+bound_l <- c(1,4,4,4) #lower bondary of the domain for each parameter to be optimized
+bound_u <- c(5,30,48,16) #upper bondary of the domain for each parameter to be optimized
 scales <- (bound_u-bound_l)/10 #for now using the range divided by 10
 
 
@@ -148,7 +154,8 @@ static_params <- inputdata[,!(colnames(inputdata) %in% optimize_list)]
 
 ###   2) Write VP inputs
 system.time(source(paste(vpdir,"src/02write_input.R",sep = ""))) #load write input function
-write_vp_input(inputdata[1,])
+#write_vp_input(inputdata[1,])
+write_vp_input_sites(inputdata[1,])
 
 
 ###   3) Run VP simulation
