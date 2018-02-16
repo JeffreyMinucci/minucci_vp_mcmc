@@ -5,7 +5,7 @@
 #
 # i = iteration number. For determing what to name results and logs. Useful if calling this function inside of a loop.
 # exe_path = path to the folder which contains the .exe (e.g. 'D:/minucci_vp_mcmc/bin/)
-# exe_name = full path to the .exe (e.g. 'D:/minucci_vp_mcmc/bin/VarroaPop.exe')
+# exe_name = name of the .exe (e.g. 'VarroaPop.exe')
 # vrp_name = name of the .vrp file (e.g. 'default_jeff.vrp')
 # input_name = name of the input file (e.g. 'input_mcmc.txt')
 # in_path = path to the input folder e.g. 'D:/minucci_vp_mcmc/input/control/
@@ -17,10 +17,12 @@
 #                  instead of rewriting the same file.
 
 
-run_vp<- function(i = 1,exe_path, exe_name, vrp_name, input_name, in_path, out_path,log_path=NULL,logs=T,debug=F,iterate_inputs){
+run_vp<- function(i = 1,exe_path, exe_name, vrp_name, input_name, in_path, 
+                  out_path,log_path=NULL,logs=T,debug=F,iterate_inputs=F){
   inputfile<- ifelse(iterate_inputs==T,paste(input_name,i,sep="_"),input_name)
   outputfile<- paste("results",i,".txt", sep="")
   logfile<- paste("log",i,".txt", sep="")
+  vpdir_executable <- paste(exe_path,exe_name,sep="")
   if(logs){
     vpdir_command <- paste(exe_path, vrp_name, 
                            " /b /or ", out_path, outputfile, 
@@ -31,6 +33,5 @@ run_vp<- function(i = 1,exe_path, exe_name, vrp_name, input_name, in_path, out_p
                            " /i ", in_path, inputfile, sep="")
   }
   if(debug) print(paste(exe_name, vpdir_command, sep=" "))
-  
   system2(vpdir_executable, vpdir_command)
 }
