@@ -135,14 +135,16 @@ verbose=T
 debug=F
 
 #parallel back end
-if(Sys.info()[4]=="DZ2626UJMINUCCI") cores<-10 else cores<-3
+if(Sys.info()[4]=="DZ2626UJMINUCCI") cores<-10 else cores<-detectCores-1
+if(cores == 1) registerDoSEQ()
 cl <- makeCluster(cores)
 registerDoParallel(cl)
 
 #load functions
 source(paste(vpdir,"src/01parameterize_simulation.R",sep = "")) 
 source(paste(vpdir,"src/02write_input.R",sep = "")) 
-source(paste(vpdir,"src/03simulate_w_exe_parallel.R",sep = "")) 
+source(paste(vpdir,"src/03simulate_w_exe_parallel.R",sep = ""))
+source(paste(vpdir,"src/04read_output.R",sep = ""))
 source(paste(vpdir,"src/05likelihood.R",sep=""))
 source(paste(vpdir,"src/06propose_mh_step.R",sep=""))
 
@@ -164,13 +166,13 @@ system.time(run_vp_parallel(i,vpdir_exe,vpdir_executable,vrp_filename,vpdir_in_c
 
 
 ###   4) Read outputs
-system.time(source(paste(vpdir,"src/04read_output.R",sep = "")))
+output_array <- read_output(i,vpdir_out_control)
 
 
 ###   5) Calculate likelihood of field data (colony size - adults) given these parameters
 var_est <- mean(c(var(bee_initial),var(bee_pops[,1]),var(bee_pops[,2]),var(bee_pops[,3]))) #for now get var from actual data
-like <- vp_loglik_sites(bee_pops,t(sapply(1:dim(tdarray_control)[3],
-                                          function(x) rowSums(tdarray_control[c(24,56,112),c(2:4),x]))),var_est,debug=F)
+like <- vp_loglik_sites(bee_pops,t(sapply(1:dim(output_array)[3],
+                                          function(x) rowSums(output_array[c(24,56,112),c(2:4),x]))),var_est,debug=F)
 like_trace<- rep(0,nsims) #initialize vector to hold likelihood trace
 like_trace[1] <- like
 
@@ -188,11 +190,11 @@ for(i in 2:nsims){
   proposal_all <- cbind(static_params,proposal)
   write_vp_input_sites(proposal_all)
   if(!(any(proposal > bound_u) | any((proposal < bound_l)))){
-    system.time(run_vp_parallel(i,vpdir_exe,vpdir_executable,vrp_filename,vpdir_in_control,
-                                vpdir_out_control,vpdir_log_control,logs=F,debug=F))
-    source(paste(vpdir,"src/04read_output.R",sep = ""))    #read output into tdarray_control
-    like <- vp_loglik_sites(bee_pops,t(sapply(1:dim(tdarray_control)[3],
-                                              function(x) rowSums(tdarray_control[c(24,56,112),c(2:4),x]))),var_est)
+    run_vp_parallel(i,vpdir_exe,vpdir_executable,vrp_filename,vpdir_in_control,
+                                vpdir_out_control,vpdir_log_control,logs=F,debug=F)
+    output_array <- read_output(i,vpdir_out_control)
+    like <- vp_loglik_sites(bee_pops,t(sapply(1:dim(output_array)[3],
+                                              function(x) rowSums(output_array[c(24,56,112),c(2:4),x]))),var_est)
     if(debug){
       print(paste("proposal: ",like))
       print(paste("current: ",like_trace[i-1]))
@@ -220,6 +222,7 @@ if(verbose){
 }
 
 stopCluster(cl)
+registerDoSEQ()
 
 #to save results of a run:
 #write.csv(inputdata, file = paste(vpdir_out_control, "inputdata_final.csv", sep = ""))
