@@ -35,4 +35,3 @@ vignettes/*.pdf
 .Rproj.user
 
 # Test scripts
-/src/03simulate_w_exe_parallel.R
