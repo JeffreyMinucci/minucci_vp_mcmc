@@ -37,7 +37,7 @@
 ## 
 
 list.of.packages <- c("plyr", "dplyr", "reshape2", "ggplot2", "grid", "gridExtra", "abind", 
-                      "ppcor")
+                      "ppcor","doParallel")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)>0) {install.packages(new.packages)}
 
@@ -50,6 +50,8 @@ library(gridExtra)
 library(sensitivity)
 library(abind)
 library(dplyr)
+library(doParallel)
+
 
 #Determine path directory based on the user machine######
 #jeff epa dev machine
@@ -67,19 +69,15 @@ if(Sys.info()[4]=="DZ2626UTPURUCKE"){
 }
 
 
-
-#subdirectories
+#set subdirectories
 vpdir_input <- paste(vpdir, "input/", sep = "")
 vpdir_output <- paste(vpdir, "output/", sep = "")
 vpdir_log_control <- paste(vpdir, "log/control/", sep = "")
 vpdir_log_neonic <- paste(vpdir, "log/neonic/", sep = "")
 vpdir_fig <- paste(vpdir, "reports/figures/", sep = "")
 vpdir_exe <- paste(vpdir, "bin/", sep = "")
-#vpdir_io <- paste(vpdir, "io/", sep = "")
 vpdir_in_control <- paste(vpdir_input, "control/", sep = "")
-vpdir_in_neonic <- paste(vpdir_input, "neonic/", sep = "")
 vpdir_out_control <- paste(vpdir_output, "control/", sep = "")
-vpdir_out_neonic <- paste(vpdir_output, "neonic/", sep = "")
 vpdir_weather <- paste(vpdir, "data/external/weather/", sep = "")
 
 #path field data on bee population
@@ -92,9 +90,6 @@ vp_field_initials <- paste(vpdir,"data/raw/field_initial_conditions.csv",sep="")
 vp_binary <- "VarroaPop.exe"
 vpdir_executable <- paste(vpdir_exe, vp_binary, sep="")
 
-
-#weather file - not sure if this variable is doing anything 
-#WeatherFileName <- "Midwest5Yr.wth"
 
 #simulation start and end
 #must have mm/dd/yyyy format
@@ -114,8 +109,6 @@ bee_initial <- field_data[,c("bees_cm2_4")] * bees_per_cm2
 ICWorkerAdults = mean(bee_initial)
 
 #static parameter list
-#static_names <- c("SimStart","SimEnd","ICWorkerAdults")
-#static_values <- c(SimStart,SimEnd,ICWorkerAdults)
 static_names <- c("SimStart","SimEnd")
 static_values <- c(SimStart,SimEnd)
 
@@ -124,17 +117,18 @@ static_values <- c(SimStart,SimEnd)
 ###############################################################
 #Run random walk Metropolis-Hastings MCMC
 
+
 ####   0) Initial settings
+
+#parameters to optimize via MCMC
 optimize_list <- c("ICQueenStrength","IPollenTrips","INectarTrips",
                    "ICForagerLifespan")
 #   Notes: ICForagerLifespan appears to be converted to integer by removing decimal places in VP
-#          With default settings, ICWorkerMiteSurvivorship and ICDroneMiteSurvivorship having no effect
-
 bound_l <- c(1,4,4,4) #lower bondary of the domain for each parameter to be optimized
 bound_u <- c(5,30,48,16) #upper bondary of the domain for each parameter to be optimized
 scales <- (bound_u-bound_l)/10 #for now using the range divided by 10
 
-
+#controls on MCMC algorithm
 step_length <- .25 #ideal for 6 dimensions seems to be around .25? 
 nsims <- 15000
 verbose=T
@@ -145,26 +139,28 @@ if(Sys.info()[4]=="DZ2626UJMINUCCI") cores<-10 else cores<-3
 cl <- makeCluster(cores)
 registerDoParallel(cl)
 
+#load functions
+source(paste(vpdir,"src/01parameterize_simulation.R",sep = "")) 
+source(paste(vpdir,"src/02write_input.R",sep = "")) 
+source(paste(vpdir,"src/03simulate_w_exe_parallel.R",sep = "")) 
+source(paste(vpdir,"src/05likelihood.R",sep=""))
+source(paste(vpdir,"src/06propose_mh_step.R",sep=""))
+
 
 ###   1) Randomly generate one set of parameters for the initial step
 i <- 1 #counter for results and log files
-source(paste(vpdir,"src/01parameterize_simulation.R",sep = "")) 
-inputdata <- generate_vpstart(static_names, static_values,
+inputdata <- generate_vpstart(static_names, static_values, #generates 1 row dataframe with starting parameter values
                               optimize_list, bound_l, bound_u, verbose) 
-#generates 1 row dataframe with starting parameter values
-
 static_params <- inputdata[,!(colnames(inputdata) %in% optimize_list)]
 
+
 ###   2) Write VP inputs
-system.time(source(paste(vpdir,"src/02write_input.R",sep = ""))) #load write input function
 write_vp_input_sites(inputdata[1,])
 
 
 ###   3) Run VP simulation
-source(paste(vpdir,"src/03simulate_w_exe_parallel.R",sep = "")) #load run_vp functions
 system.time(run_vp_parallel(i,vpdir_exe,vpdir_executable,vrp_filename,vpdir_in_control,
                             vpdir_out_control,vpdir_log_control,logs=T,debug=T))
-
 
 
 ###   4) Read outputs
@@ -172,13 +168,10 @@ system.time(source(paste(vpdir,"src/04read_output.R",sep = "")))
 
 
 ###   5) Calculate likelihood of field data (colony size - adults) given these parameters
-source(paste(vpdir,"src/05likelihood.R",sep="")) #creates var "like" which holds the likelihood
 var_est <- mean(c(var(bee_initial),var(bee_pops[,1]),var(bee_pops[,2]),var(bee_pops[,3]))) #for now get var from actual data
-#like <- vp_loglik_simple(adult_pop_month1,tdarray_control[24,3,1],var_est)
-#like <- vp_loglik_dates(bee_pops,rowSums(tdarray_control[c(24,56,112),c(2:4),1]),var_est)
 like <- vp_loglik_sites(bee_pops,t(sapply(1:dim(tdarray_control)[3],
-                                          function(x) rowSums(tdarray_control[c(24,56,112),c(2:4),x]))),var_est,debug=T)
-like_trace<- rep(0,nsims)
+                                          function(x) rowSums(tdarray_control[c(24,56,112),c(2:4),x]))),var_est,debug=F)
+like_trace<- rep(0,nsims) #initialize vector to hold likelihood trace
 like_trace[1] <- like
 
 
@@ -189,9 +182,6 @@ like_trace[1] <- like
 ###      Return to 6
 
 
-#load functions
-source(paste(vpdir,"src/06propose_mh_step.R",sep=""))
-
 for(i in 2:nsims){
   print(paste("MCMC step: ",i-1," log-likelihood: ",like_trace[i-1]))
   proposal <- metropolis_proposal(inputdata[i-1,optimize_list],scales,step_length)
@@ -201,8 +191,6 @@ for(i in 2:nsims){
     system.time(run_vp_parallel(i,vpdir_exe,vpdir_executable,vrp_filename,vpdir_in_control,
                                 vpdir_out_control,vpdir_log_control,logs=F,debug=F))
     source(paste(vpdir,"src/04read_output.R",sep = ""))    #read output into tdarray_control
-    #like <- vp_loglik_simple(adult_pop_month1,tdarray_control[24,3,1],var_est) #calc likelihood
-    #like <- vp_loglik_dates(bee_pops,rowSums(tdarray_control[c(24,56,112),c(2:4),1]),var_est) #calc likelihood
     like <- vp_loglik_sites(bee_pops,t(sapply(1:dim(tdarray_control)[3],
                                               function(x) rowSums(tdarray_control[c(24,56,112),c(2:4),x]))),var_est)
     if(debug){
@@ -231,6 +219,7 @@ if(verbose){
   print(inputdata[nsims,optimize_list])
 }
 
+stopCluster(cl)
 
 #to save results of a run:
 #write.csv(inputdata, file = paste(vpdir_out_control, "inputdata_final.csv", sep = ""))
