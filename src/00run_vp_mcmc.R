@@ -157,12 +157,14 @@ static_params <- inputdata[,!(colnames(inputdata) %in% optimize_list)]
 
 ###   2) Write VP inputs
 system.time(source(paste(vpdir,"src/02write_input.R",sep = ""))) #load write input function
-#write_vp_input(inputdata[1,])
 write_vp_input_sites(inputdata[1,])
 
 
 ###   3) Run VP simulation
-system.time(source(paste(vpdir,"src/03simulate_w_exe_parallel.R",sep = "")))
+source(paste(vpdir,"src/03simulate_w_exe_parallel.R",sep = "")) #load run_vp functions
+system.time(run_vp_parallel(i,vpdir_exe,vpdir_executable,vrp_filename,vpdir_in_control,
+                            vpdir_out_control,vpdir_log_control,logs=T,debug=T))
+
 
 
 ###   4) Read outputs
@@ -196,7 +198,8 @@ for(i in 2:nsims){
   proposal_all <- cbind(static_params,proposal)
   write_vp_input_sites(proposal_all)
   if(!(any(proposal > bound_u) | any((proposal < bound_l)))){
-    source(paste(vpdir,"src/03simulate_w_exe_parallel.R",sep = "")) #run sim for proposal  
+    system.time(run_vp_parallel(i,vpdir_exe,vpdir_executable,vrp_filename,vpdir_in_control,
+                                vpdir_out_control,vpdir_log_control,logs=F,debug=F))
     source(paste(vpdir,"src/04read_output.R",sep = ""))    #read output into tdarray_control
     #like <- vp_loglik_simple(adult_pop_month1,tdarray_control[24,3,1],var_est) #calc likelihood
     #like <- vp_loglik_dates(bee_pops,rowSums(tdarray_control[c(24,56,112),c(2:4),1]),var_est) #calc likelihood
@@ -240,7 +243,7 @@ if(verbose){
 
 #Note: move below to a post-processing script
 
-accept_rate <- length(unique(like_trace))/length(like_trace)
+accept_rate <- length(unique(like_trace[like_trace!=0]))/length(like_trace[like_trace!=0])
 #hist(inputdata$ICForagerLifespan[3000:10000])
 #hist(inputdata$ICQueenStrength[3000:10000])
 
