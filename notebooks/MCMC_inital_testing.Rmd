@@ -84,7 +84,7 @@ Run MCMC for VarroaPop, fitting all 10 sites in parallel
 
 ```{r}
 ## Test vp MCMC function
-library(compiler)
+#library(compiler)
 source(paste(vpdir,"src/00run_vp_mcmc.R",sep = "")) 
 system.time(test_results <- new_vp_mcmc_c(nsims = 10, step_length = .25, vp_dir=vpdir, static_vars = static_list, 
                             optimize_vars = optimize_list, logs = T, verbose = T))[3]

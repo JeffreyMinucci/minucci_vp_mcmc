@@ -46,8 +46,9 @@
 #
 # @return A list containing:
 #   $param_trace A dataframe of VP inputs, with a row for each MCMC step
-#   #like_trace A vector of likelihoods at each MCMC step
-#   #accept_rate The fraction of proposals that were accepted
+#   $like_trace A vector of likelihoods at each MCMC step
+#   $accept_rate The fraction of proposals that were accepted
+#   $mcmc_params A list of the params passed to the function
 
 new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length=.25, vp_dir, dir_structure=NULL, static_vars, 
                         optimize_vars, logs=T, verbose=T, debug=F){
@@ -181,7 +182,12 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
     print(inputdata[nsims,optimize_vars[["names"]]])
   }
   
-  return(list(param_trace = inputdata, like_trace = like_trace, accept_rate = accepts/nsims))
+  mcmc_params <- list(vrp_filename=vrp_filename, nsims=nsims, step_length=step_length, vp_dir=vp_dir, 
+                     dir_structure=dir_structure, static_vars = static_vars, 
+                     optimize_vars= optimize_vars, logs=logs, verbose=verbose, debug=debug)
+  toReturn <- list(param_trace = inputdata, like_trace = like_trace, accept_rate = accepts/nsims, mcmc_params = mcmc_params)
+  class(toReturn) <- "vp_mcmc_run"
+  return(toReturn)
   
 }
 
