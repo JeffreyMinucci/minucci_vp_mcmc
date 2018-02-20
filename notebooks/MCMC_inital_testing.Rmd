@@ -1,0 +1,95 @@
+---
+title: "VarroaPop MCMC initial testing"
+author: "Jeffrey Minucci"
+date: "February 20, 2018"
+output: 
+ html_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE)
+```
+<base target="_top"/>
+<br>
+
+
+Introduction
+=====================
+
+Code for initial testing of the VarroaPop MCMC algorithm
+
+### Current bugs:
+
+### To implement:
+* Neonic exposure events for each site
+* Exact date matching
+* Resolve the hive that split
+
+
+Set up for user's computer
+====================
+```{r}
+#Determine path directory based on the user machine######
+#jeff epa dev machine
+if(Sys.info()[4]=="DZ2626UJMINUCCI"){
+  vpdir<-path.expand("d:/Git_files/minucci_vp_mcmc/")
+  vrp_filename <- "default_jeff.vrp"
+}
+
+#tom epa windows 2
+if(Sys.info()[4]=="DZ2626UTPURUCKE"){
+  vpdir<-path.expand("k:/git/minucci_vp_mcmc/")
+  vrp_filename <- "default_tom.vrp" #will need to be generated from default_jeff.vrp with pointer to Tom's weather file location
+}
+
+```
+
+
+Set some VP initial parameters
+============================
+```{r}
+#simulation start and end
+#must have mm/dd/yyyy format
+SimStart<- "4/30/1999"
+SimEnd <- "8/25/1999"
+
+#static parameter list
+static_names <- c("SimStart","SimEnd")
+static_values <- c(SimStart,SimEnd)
+static_list <- list(names = static_names, values = static_values)
+
+
+```
+
+
+Choose VP parameters to optimize
+===================================
+```{r}
+#parameters to optimize via MCMC
+optimize_names <- c("ICQueenStrength","IPollenTrips","INectarTrips",
+                   "ICForagerLifespan")
+#   Notes: ICForagerLifespan appears to be converted to integer by removing decimal places in VP
+bound_l <- c(1,4,4,4) #lower bondary of the domain for each parameter to be optimized
+bound_u <- c(5,30,48,16) #upper bondary of the domain for each parameter to be optimized
+#scales <- (bound_u-bound_l)/10 #for now using the range divided by 10
+optimize_list <- list(names = optimize_names, bound_l = bound_l, bound_u = bound_u)
+
+```
+
+Run MCMC algorithm
+===================================
+
+Run MCMC for VarroaPop, fitting all 10 sites in parallel
+
+```{r}
+## Test vp MCMC function
+library(compiler)
+source(paste(vpdir,"src/00run_vp_mcmc.R",sep = "")) 
+system.time(test_results <- new_vp_mcmc_c(nsims = 10, step_length = .25, vp_dir=vpdir, static_vars = static_list, 
+                            optimize_vars = optimize_list, logs = T, verbose = T))[3]
+str(test_results)
+print(paste("Acceptance rate:", test_results$accept_rate))
+
+```
+
