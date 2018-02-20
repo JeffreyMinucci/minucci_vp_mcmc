@@ -47,3 +47,7 @@ vp_loglik_sites <- function(actual,pred,var,debug=FALSE){
   if(debug) print(residuals)
   return(ll)
 }
+
+#compiled version
+require(compiler)
+vp_loglik_sites_c <- cmpfun(vp_loglik_sites)

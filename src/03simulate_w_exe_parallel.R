@@ -43,3 +43,7 @@ run_vp_parallel <- function(i,exe_path, exe_name, vrp_name, in_path, out_path,lo
     system2(vpdir_executable , vpdir_command)
   }
 }
+
+#compiled version
+require(compiler)
+run_vp_parallel_c <- cmpfun(run_vp_parallel)

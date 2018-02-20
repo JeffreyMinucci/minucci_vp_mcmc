@@ -19,9 +19,13 @@
 # @return:
 #     a vector of parameters that corresponds to a proposed jump in parameter space
 
+require(compiler)
 
 metropolis_proposal <- function(current,scales,step){
   new <- rep(0,length(current))
   new <- current + (rnorm(length(current),0,1) * scales * step)
   return(new)
 }
+
+#compiled version
+metropolis_proposal_c <- cmpfun(metropolis_proposal)

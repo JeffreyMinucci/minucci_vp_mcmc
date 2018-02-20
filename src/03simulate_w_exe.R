@@ -39,3 +39,8 @@ run_vp<- function(i = 1,exe_path, exe_name, vrp_name, input_name, in_path,
   if(debug) print(paste(exe_name, vpdir_command, sep=" "))
   system2(vpdir_executable, vpdir_command)
 }
+
+
+#compiled version
+require(compiler)
+run_vp_c <- cmpfun(run_vp)

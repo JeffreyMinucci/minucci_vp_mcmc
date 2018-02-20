@@ -14,6 +14,7 @@
 
 read_output <- function(i,out_path,debug=F){
   
+  require(abind)
   Nsims <- 10 #number of results files (sites) per MCMC iteration
   outvar<- c("Date","Colony Size","Adult Drones","Adult Workers", "Foragers", "Capped Drone Brood", "Capped Worker Brood",
                "Drone Larvae", "Worker Larvae", "Drone Eggs", "Worker Eggs", "Free Mites", "Drone Brood Mites",
@@ -35,6 +36,12 @@ read_output <- function(i,out_path,debug=F){
   return(outputs)
   
 }
+
+#compiled version
+require(compiler)
+read_output_c <- cmpfun(read_output)
+
+
 # 
 # # load up varroapop data into a 3d array dataframe ######
 # 

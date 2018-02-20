@@ -26,12 +26,12 @@ write_vp_input <- function(params, in_path){
 #
 # @param params: vector of VarroaPop inputs to be written to .txt file 
 # @in_path: directory to write input .txt file to (e.g. D:/minucci_vp_mcmc/input/control/)
+# @init_cond: data frame of initial field values
 #
 # @return: nothing - writes inputs to a .txt file in in_path for VP to read
 #
 
-write_vp_input_sites <- function(params, in_path){
-  init_cond <- read.csv(vp_field_initials)
+write_vp_input_sites <- function(params, in_path, init_cond){
   cm2_to_bees <- 1.45
   cm2_to_brood <- 3.43 #based on size of brood cells (.54 x .54 cm)
   cm2_to_larvae <- 3.43 *.66 #based on size of brood cells and time spend as larvae vs egg
@@ -48,4 +48,8 @@ write_vp_input_sites <- function(params, in_path){
   }
 }
 
+
+#compiled version
+require(compiler)
+write_vp_input_sites_c <- cmpfun(write_vp_input_sites)
 
