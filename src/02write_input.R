@@ -1,21 +1,38 @@
+##
+# Write VarroaPop Inputs
+# code by Jeff Minucci
+#
+##
+
 
 # function to create a single input file from a set of parameters in the form of
 # a one row dataframe, where columns are named 
+#
+# @param params: vector of VarroaPop inputs to be written to .txt file
+# @param in_path: directory to write input .txt file to
+#
+# @return: nothing - writes inputs to a .txt file in in_path for VP to read
+#
 
-write_vp_input <- function(params){
+write_vp_input <- function(params, in_path){
   inputs <- paste(colnames(params),as.character(params[1,]),sep="=")
-  write(inputs, file = paste(vpdir_in_control, "input_mcmc.txt", sep = ""), sep="")
+  write(inputs, file = paste(in_path, "input_mcmc.txt", sep = ""), sep="")
   
 }
 
 
 # function to create 10 input files from a set of parameters (one for each site) in the form of
 # a one row dataframe, where columns are named. Sites differ in initial hive conditions and neonic exposure
+#
+# @param params: vector of VarroaPop inputs to be written to .txt file 
+# @in_path: directory to write input .txt file to (e.g. D:/minucci_vp_mcmc/input/control/)
+#
+# @return: nothing - writes inputs to a .txt file in in_path for VP to read
+#
 
-
-write_vp_input_sites <- function(params){
+write_vp_input_sites <- function(params, in_path){
   init_cond <- read.csv(vp_field_initials)
-  cm2_to_bees <- 1
+  cm2_to_bees <- 1.45
   cm2_to_brood <- 3.43 #based on size of brood cells (.54 x .54 cm)
   cm2_to_larvae <- 3.43 *.66 #based on size of brood cells and time spend as larvae vs egg
   cm2_to_egg <- 3.43 *.33  #based on size of brood cells and time spend as larvae vs egg
@@ -27,7 +44,7 @@ write_vp_input_sites <- function(params){
   for(j in 1:10){
     inits <- paste(initials,initials_vals[j,],sep="=")
     inputs <- c(inits,paste(colnames(params),as.character(params[1,]),sep="="))
-    write(inputs, file = paste(vpdir_in_control, "input_mcmc_",j,".txt", sep = ""), sep="")
+    write(inputs, file = paste(in_path, "input_mcmc_",j,".txt", sep = ""), sep="")
   }
 }
 

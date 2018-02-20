@@ -1,5 +1,16 @@
+##
+# Read VP results for MCMC analysis
+# code by Jeff Minucci
+#
+#
 # Function to read results from a set of 10 vp runs (one for each site/neonic profile)
 # outputs a 3d array of results (dim 1 = day, dim 2 = response var, dim 3 = site)
+#
+# @param i: iteration number. For determing what MCMC step iteration to read results for. 
+# @param out_path: directory to look for results files in (e.g. D:/minucci_vp_mcmc/output/control/)
+# 
+# @return: a dataframe of VP outputs (columns) by simulation date (rows) 
+##
 
 read_output <- function(i,out_path,debug=F){
   

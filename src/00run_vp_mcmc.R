@@ -88,7 +88,6 @@ vp_field_initials <- paste(vpdir,"data/raw/field_initial_conditions.csv",sep="")
 
 #varroapop executable version
 vp_binary <- "VarroaPop.exe"
-vpdir_executable <- paste(vpdir_exe, vp_binary, sep="")
 
 
 #simulation start and end
@@ -98,7 +97,7 @@ SimEnd <- "8/25/1999"
 
 #read field data
 field_data <- read.csv(vp_field_data)
-bees_per_cm2 <- 1  #convert area of bees to individuals  
+bees_per_cm2 <- 1.45  #convert area of bees to individuals  
 bee_pops <- as.matrix(field_data[,c("bees_cm2_5","bees_cm2_6","bees_cm2_8")]) * bees_per_cm2 
 bee_initial <- field_data[,c("bees_cm2_4")] * bees_per_cm2
 #NOTE: need to consider hive that split
@@ -130,7 +129,7 @@ scales <- (bound_u-bound_l)/10 #for now using the range divided by 10
 
 #controls on MCMC algorithm
 step_length <- .25 #ideal for 6 dimensions seems to be around .25? 
-nsims <- 15000
+nsims <- 30000
 verbose=T
 debug=F
 
@@ -157,11 +156,11 @@ static_params <- inputdata[,!(colnames(inputdata) %in% optimize_list)]
 
 
 ###   2) Write VP inputs
-write_vp_input_sites(inputdata[1,])
+write_vp_input_sites(inputdata[1,], vpdir_in_control)
 
 
 ###   3) Run VP simulation
-system.time(run_vp_parallel(i,vpdir_exe,vpdir_executable,vrp_filename,vpdir_in_control,
+system.time(run_vp_parallel(i,vpdir_exe,vp_binary,vrp_filename,vpdir_in_control,
                             vpdir_out_control,vpdir_log_control,logs=T,debug=T))
 
 
@@ -188,9 +187,9 @@ for(i in 2:nsims){
   print(paste("MCMC step: ",i-1," log-likelihood: ",like_trace[i-1]))
   proposal <- metropolis_proposal(inputdata[i-1,optimize_list],scales,step_length)
   proposal_all <- cbind(static_params,proposal)
-  write_vp_input_sites(proposal_all)
+  write_vp_input_sites(proposal_all, vpdir_in_control)
   if(!(any(proposal > bound_u) | any((proposal < bound_l)))){
-    run_vp_parallel(i,vpdir_exe,vpdir_executable,vrp_filename,vpdir_in_control,
+    run_vp_parallel(i,vpdir_exe,vp_binary,vrp_filename,vpdir_in_control,
                                 vpdir_out_control,vpdir_log_control,logs=F,debug=F)
     output_array <- read_output(i,vpdir_out_control)
     like <- vp_loglik_sites(bee_pops,t(sapply(1:dim(output_array)[3],

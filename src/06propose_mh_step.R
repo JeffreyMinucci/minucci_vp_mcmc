@@ -1,7 +1,7 @@
 ##
 #  Function to generate a proposal for the next MCMC step - for given parameters
 #
-#  Author: Jeffrey Minucci
+#  Code by: Jeffrey Minucci
 #
 #
 ##
@@ -13,10 +13,10 @@
 # that varies based on the scale of each parameter (i.e. smaller steps for parameters that have small ranges or values)
 #
 # takes parameters:
-#     current - vector of the current parameter values (to be optimized)
-#     scales  - vector that expresses the variance for each parameter
-#     step - a single number representing the step length tuning parameter
-# returns:
+#     @param current: vector of the current parameter values (to be optimized)
+#     @param scales: vector that expresses the variance for each parameter
+#     @param step: a single number representing the step length tuning parameter
+# @return:
 #     a vector of parameters that corresponds to a proposed jump in parameter space
 
 
