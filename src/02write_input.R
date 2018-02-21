@@ -38,7 +38,7 @@ write_vp_input_sites <- function(params, in_path, init_cond){
   cm2_to_egg <- 3.43 *.33  #based on size of brood cells and time spend as larvae vs egg
   cm2_to_nectar <- .823 #based on volume of .54 x .54 x 1.25 cm cells and nectar density ~ 1.0 g/ml
   cm2_to_pollen <- 1.193 #based on volume of .54 x .54 x 1.25 cm cells and corn pollen density ~ 1.045 g/ml
-  initials <- c("ICWorkerAdults","ICWorkerBrood","ICWorkerLarave","ICWorkerEggs","InitColPollen","InitColNectar")
+  initials <- c("ICWorkerAdults","ICWorkerBrood","ICWorkerLarvae","ICWorkerEggs","InitColPollen","InitColNectar")
   initials_vals <- as.matrix(init_cond[,c(4,5,6,6,7,8)]) %*% diag(c(cm2_to_bees,cm2_to_brood,
                                                          cm2_to_larvae,cm2_to_egg,cm2_to_pollen,cm2_to_nectar))
   for(j in 1:10){
