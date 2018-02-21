@@ -43,6 +43,7 @@
 #   $bound_l A vector of the lower bounds for the parameters to optimize
 #   $bound_u A vector of the upper bounds for the parameters to optimize
 #   $scales Optional - a vector of the 'scaling factors' for the parameters to optimize
+# @param start_point - Optional - 1 row dataframe of inputs (from a previous run)
 #
 # @return A list containing:
 #   $param_trace A dataframe of VP inputs, with a row for each MCMC step
@@ -51,7 +52,7 @@
 #   $mcmc_params A list of the params passed to the function
 
 new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length=.25, vp_dir, dir_structure=NULL, static_vars, 
-                        optimize_vars, logs=T, verbose=T, debug=F){
+                        optimize_vars, start_point = NULL, logs=T, verbose=T, debug=F){
   
   
   #load packages if needed
@@ -105,14 +106,16 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
   source(paste(vpdir,"src/06propose_mh_step.R",sep=""))
   
   
-  ###   1) Randomly generate one set of parameters for the initial step
+  ###   1) Randomly generate one set of parameters for the initial step OR use end of previous run (if given)
   i <- 1 #counter for results and log files
-  inputdata <- generate_vpstart(static_vars[["names"]], static_vars[["values"]], #generates 1 row dataframe with starting parameter values
-                                optimize_vars[["names"]], optimize_vars[["bound_l"]],
-                                optimize_vars[["bound_u"]], verbose) 
+  if(is.null(start_point)){
+    inputdata <- generate_vpstart(static_vars[["names"]], static_vars[["values"]], #generates 1 row dataframe with starting parameter values
+                                 optimize_vars[["names"]], optimize_vars[["bound_l"]],
+                                 optimize_vars[["bound_u"]], verbose) 
+  } else inputdata <- start_point
   static_params <- inputdata[,!(colnames(inputdata) %in%  optimize_vars[["names"]])]
   
-  
+
   ###   2) Write VP inputs
   write_vp_input_sites_c(params = inputdata[1,], in_path = dir_structure[["input"]],init_cond=initial_conditions)
   
@@ -196,4 +199,45 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
 require(compiler)
 new_vp_mcmc_c <- cmpfun(new_vp_mcmc)
 
+
+
+
+
+# Continue a vp_mcmc run
+#
+# Function to continue a vp_mcmc run from an existing "new_vp_mcmc" function output object
+#
+# @param nsims Number of additional simulations to run
+# @param step_length Optional - new step length?
+# @param old_vp_mcmc Output of the previous vp_mcmc run
+
+continue_vp_mcmc <- function(nsims, old_vp_mcmc, step_length=NULL){
+  
+  #read info from the previous vp_mcmc run
+  orig_params <- old_vp_mcmc$mcmc_params
+  orig_param_trace <- old_vp_mcmc$param_trace[complete.cases(old_vp_mcmc$param_trace),]
+  orig_nsims <- nrow(orig_param_trace)
+  orig_like_trace <- old_vp_mcmc$like_trace[1:orig_nsims]
+  
+  #modify previous parameters for new run
+  new_params <- orig_params
+  new_params$nsims <- nsims + 1 #nsims = additonal simulations on top of existing
+  if(!is.null(step_length)) new_params$step_length <- step_length
+  new_params[["start_point"]] <- orig_param_trace[orig_nsims,]
+  
+  #run new_vp_mcmc from end of last run
+  new_results <- do.call(new_vp_mcmc_c,args=new_params)
+  
+  #add new results to old results and output vp_mcmc object
+  new_results$param_trace <- rbind(orig_param_trace,new_results$param_trace[-1,])
+  new_results$like_trace <- c(orig_like_trace, new_results$like_trace[-1])
+  new_results$mcmc_params$nsims <- length(new_results$like_trace)
+  new_results$mcmc_params$step_length <- new_params$step_length
+  return(new_results)
+}
+
+
+#compiled version
+
+continue_vp_mcmc_c <- cmpfun(continue_vp_mcmc)
 

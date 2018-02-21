@@ -86,7 +86,7 @@ Run MCMC for VarroaPop, fitting all 10 sites in parallel
 ## Test vp MCMC function
 #library(compiler)
 source(paste(vpdir,"src/00run_vp_mcmc.R",sep = "")) 
-system.time(test_results <- new_vp_mcmc_c(nsims = 10, step_length = .5, vp_dir=vpdir, static_vars = static_list, 
+system.time(test_results <- new_vp_mcmc_c(nsims = 2, step_length = .5, vp_dir=vpdir, static_vars = static_list, 
                             optimize_vars = optimize_list, logs = T, verbose = T))[3]
 str(test_results)
 print(paste("Acceptance rate:", test_results$accept_rate))
@@ -113,4 +113,14 @@ Plot parameter traces and posteriors
 library(MCMCvis)
 MCMCtrace(as.matrix(test_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]]),filename="test_fulltrace",
           iter=5000,wd=paste(vpdir,"reports/figures/",sep=""))
+```
+
+
+Continuing where we left off in the MCMC run
+========================================
+```{r}
+
+test_results <- continue_vp_mcmc(3,test_results,step_length = .6)
+plot(test_results$like_trace,type='l')
+
 ```
