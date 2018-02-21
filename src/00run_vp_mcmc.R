@@ -27,7 +27,7 @@
 # @param nsims 
 # @param param step_length
 # @param vp_dir Gives the directory of the project
-# @param dir_structure Optional: a list containing:
+# @param dir_structure Optional - a list containing:
 #   $input path of input folder
 #   $output path of output folder
 #   $log path of log folder
@@ -68,9 +68,9 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
   
   #If directory structure is not given, use default
   if(is.null(dir_structure)){
-    vpdir_in <- paste(vp_dir, "input/control/", sep = "")
-    vpdir_out <- paste(vp_dir, "output/control/", sep = "")
-    vpdir_log <- paste(vp_dir, "log/control/", sep = "")
+    vpdir_in <- paste(vp_dir, "input/", sep = "")
+    vpdir_out <- paste(vp_dir, "output/vp_output/", sep = "")
+    vpdir_log <- paste(vp_dir, "log/", sep = "")
     vpdir_exe <- paste(vp_dir, "bin/", sep = "")
     vp_binary <- "VarroaPop.exe"
     vp_field_data <- paste(vp_dir,"data/raw/field_bee_areas.csv",sep="")

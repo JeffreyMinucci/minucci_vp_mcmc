@@ -86,11 +86,11 @@ Run MCMC for VarroaPop, fitting all 10 sites in parallel
 ## Test vp MCMC function
 #library(compiler)
 source(paste(vpdir,"src/00run_vp_mcmc.R",sep = "")) 
-system.time(test_results <- new_vp_mcmc_c(nsims = 20, step_length = .25, vp_dir=vpdir, static_vars = static_list, 
+system.time(test_results <- new_vp_mcmc_c(nsims = 10, step_length = .5, vp_dir=vpdir, static_vars = static_list, 
                             optimize_vars = optimize_list, logs = T, verbose = T))[3]
 str(test_results)
 print(paste("Acceptance rate:", test_results$accept_rate))
-#save(test_results,file=paste(vpdir_output,"mcmc_run_objects/test_2_20_18.Rdata",sep = ""))
+#saveRDS(test_results,file=paste(vpdir_output,"mcmc_run_objects/test_2_20_18.rds",sep = ""))
 
 ```
 
@@ -98,12 +98,13 @@ Visualize results of test run
 ====================================
 Acceptance rate (should be ~.25)
 ```{r}
+test_results <- readRDS(file=paste(vpdir_output,"mcmc_run_objects/test_2_20_18.rds",sep = ""))
 print(paste("Acceptance rate:", test_results$accept_rate))
 ```
 
 Plot likelihood trace
 ```{r}
-plot(test_results$like_trace)
+plot(test_results$like_trace, type='l')
 ```
 
 

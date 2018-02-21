@@ -7,7 +7,7 @@
 # outputs a 3d array of results (dim 1 = day, dim 2 = response var, dim 3 = site)
 #
 # @param i: iteration number. For determing what MCMC step iteration to read results for. 
-# @param out_path: directory to look for results files in (e.g. D:/minucci_vp_mcmc/output/control/)
+# @param out_path: directory to look for results files in (e.g. D:/minucci_vp_mcmc/output/vp_output/)
 # 
 # @return: a dataframe of VP outputs (columns) by simulation date (rows) 
 ##

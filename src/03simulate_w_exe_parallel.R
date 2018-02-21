@@ -12,9 +12,9 @@
 # @param exe_name: name of the .exe (e.g. 'VarroaPop.exe')
 # @param vrp_name: name of the .vrp file (e.g. 'default_jeff.vrp')
 # @param input_name: name of the input file (e.g. 'input_mcmc.txt')
-# @param in_path: path to the input folder e.g. 'D:/minucci_vp_mcmc/input/control/
-# @param out_path: path to the output folder e.g. 'D:/minucci_vp_mcmc/output/control/
-# @param log_path: path to the log folder e.g. 'D:/minucci_vp_mcmc/log/control/ (can be omitted if logs=F)
+# @param in_path: path to the input folder e.g. 'D:/minucci_vp_mcmc/input/
+# @param out_path: path to the output folder e.g. 'D:/minucci_vp_mcmc/output/vp_output/
+# @param log_path: path to the log folder e.g. 'D:/minucci_vp_mcmc/log/ (can be omitted if logs=F)
 # @param logs: T/F, should VP write a log file to the log_path folder?
 #
 # @return: nothing - VP writes the output to the out_path directory

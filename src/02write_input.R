@@ -25,7 +25,7 @@ write_vp_input <- function(params, in_path){
 # a one row dataframe, where columns are named. Sites differ in initial hive conditions and neonic exposure
 #
 # @param params: vector of VarroaPop inputs to be written to .txt file 
-# @in_path: directory to write input .txt file to (e.g. D:/minucci_vp_mcmc/input/control/)
+# @in_path: directory to write input .txt file to (e.g. D:/minucci_vp_mcmc/input/)
 # @init_cond: data frame of initial field values
 #
 # @return: nothing - writes inputs to a .txt file in in_path for VP to read
