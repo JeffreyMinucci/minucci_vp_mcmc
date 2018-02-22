@@ -86,7 +86,7 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
   
   
   #load initial conditions
-  initial_conditions <- read.csv(dir_structure[["field_initials"]])
+  initial_conditions <- read.csv(dir_structure[["field_initials"]],stringsAsFactors=FALSE)
 
   #load bee populations to fit
   field_data <- read.csv(dir_structure[["field_pops"]])
@@ -94,8 +94,11 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
   bee_pops <- as.matrix(field_data[,c("bees_cm2_5","bees_cm2_6","bees_cm2_8")]) * bees_per_cm2 
   bee_initial <- field_data[,c("bees_cm2_4")] * bees_per_cm2
   #NOTE: need to consider hive that split
-  #ballpark times: t1 = 5/21, t2 = 6/23, t4 = 8/18
-  #NOTE: include exact dates when evaluating each site
+  
+  #dates to sample populations for each site
+  dates <- field_data[,c("date_5","date_6","date_8")]
+  days_sampled <- sapply(dates, function(x) as.Date(x,format="%m/%d/%Y") - as.Date(field_data[,"date_4"],format="%m/%d/%Y")) 
+
   
   #load functions
   source(paste(vpdir,"src/01parameterize_simulation.R",sep = "")) 
@@ -113,8 +116,8 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
                                  optimize_vars[["names"]], optimize_vars[["bound_l"]],
                                  optimize_vars[["bound_u"]], verbose) 
   } else inputdata <- start_point
-  static_params <- inputdata[,!(colnames(inputdata) %in%  optimize_vars[["names"]])]
-  
+  static_params <- as.data.frame(inputdata[,!(colnames(inputdata) %in%  optimize_vars[["names"]])],stringsAsFactors=F)
+  str(static_params)
 
   ###   2) Write VP inputs
   write_vp_input_sites_c(params = inputdata[1,], in_path = dir_structure[["input"]],init_cond=initial_conditions)
@@ -128,12 +131,12 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
   
   ###   4) Read outputs
   output_array <- read_output_c(i,dir_structure[["output"]])
-  
-  
+
   ###   5) Calculate likelihood of field data (colony size - adults) given these parameters
   var_est <- mean(c(var(bee_initial),var(bee_pops[,1]),var(bee_pops[,2]),var(bee_pops[,3]))) #for now get var from actual data
   like <- vp_loglik_sites_c(bee_pops,t(sapply(1:dim(output_array)[3],
-                                            function(x) rowSums(output_array[c(24,56,112),c(2:4),x]))),var_est,debug=F)
+                                            function(x, site) rowSums(output_array[days_sampled[site,]+1,c(2:4),x])
+                                       , site=1:dim(output_array)[3])),var_est,debug=F)
   like_trace<- rep(0,nsims) #initialize vector to hold likelihood trace
   like_trace[1] <- like
   
@@ -150,6 +153,7 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
     print(paste("MCMC step: ",i-1," log-likelihood: ",like_trace[i-1]))
     proposal <- metropolis_proposal_c(inputdata[i-1,optimize_vars[["names"]]],optimize_vars[["scales"]],step_length)
     proposal_all <- cbind(static_params,proposal)
+    #print(static_params)
     write_vp_input_sites_c(proposal_all, dir_structure[["input"]], init_cond = initial_conditions)
     if(!(any(proposal > bound_u) | any((proposal < bound_l)))){
       run_vp_parallel_c(i,dir_structure[["exe_folder"]],dir_structure[["exe_file"]],
@@ -157,7 +161,8 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
                       dir_structure[["output"]],dir_structure[["log"]],logs=logs,debug=debug)
       output_array <- read_output_c(i,dir_structure[["output"]])
       like <- vp_loglik_sites_c(bee_pops,t(sapply(1:dim(output_array)[3],
-                                                function(x) rowSums(output_array[c(24,56,112),c(2:4),x]))),var_est)
+                                                  function(x, site) rowSums(output_array[days_sampled[site,]+1,c(2:4),x])
+                                                  , site=1:dim(output_array)[3])),var_est,debug=F)
       if(debug){
         print(paste("proposal: ",like))
         print(paste("current: ",like_trace[i-1]))

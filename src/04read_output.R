@@ -26,7 +26,7 @@ read_output <- function(i,out_path,debug=F){
   
   # read output files
   
-  outputs <- array(data=NA, c(nrows,ncols-1,Nsims))
+  outputs <- array(data=NA, c(125,length(outvar)-1,Nsims))
   for (j in 1:Nsims) {
     df <- read.table(paste(out_path,"results",i,"_",j,".txt", sep=""), header= FALSE, sep= "", 
                      skip = 6, stringsAsFactors = FALSE, row.names=NULL, col.names = outvar)

@@ -20,6 +20,7 @@ Introduction
 Code for initial testing of the VarroaPop MCMC algorithm
 
 ### Current bugs:
+* Error if only one (or no) static parameters are included
 
 ### To implement:
 * Neonic exposure events for each site
@@ -51,12 +52,13 @@ Set some VP initial parameters
 ```{r}
 #simulation start and end
 #must have mm/dd/yyyy format
-SimStart<- "4/30/1999"
-SimEnd <- "8/25/1999"
+SimEnd <- "8/25/2015"
+koc <- 60
+kow <- 2
 
 #static parameter list
-static_names <- c("SimStart","SimEnd")
-static_values <- c(SimStart,SimEnd)
+static_names <- c("SimEnd","koc","kow")
+static_values <- c(SimEnd,koc,kow)
 static_list <- list(names = static_names, values = static_values)
 
 
@@ -86,7 +88,7 @@ Run MCMC for VarroaPop, fitting all 10 sites in parallel
 ## Test vp MCMC function
 #library(compiler)
 source(paste(vpdir,"src/00run_vp_mcmc.R",sep = "")) 
-system.time(test_results <- new_vp_mcmc_c(nsims = 2, step_length = .5, vp_dir=vpdir, static_vars = static_list, 
+system.time(test_results <- new_vp_mcmc_c(nsims = 20, step_length = .5, vp_dir=vpdir, static_vars = static_list, 
                             optimize_vars = optimize_list, logs = T, verbose = T))[3]
 str(test_results)
 print(paste("Acceptance rate:", test_results$accept_rate))
@@ -118,9 +120,10 @@ MCMCtrace(as.matrix(test_results$param_trace[, test_results$mcmc_params$optimize
 
 Continuing where we left off in the MCMC run
 ========================================
+We can also adjust the step length. 
 ```{r}
 
-test_results <- continue_vp_mcmc(3,test_results,step_length = .6)
+test_results <- continue_vp_mcmc(20,test_results,step_length = .6)
 plot(test_results$like_trace,type='l')
 
 ```

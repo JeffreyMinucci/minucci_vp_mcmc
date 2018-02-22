@@ -43,7 +43,9 @@ write_vp_input_sites <- function(params, in_path, init_cond){
                                                          cm2_to_larvae,cm2_to_egg,cm2_to_pollen,cm2_to_nectar))
   for(j in 1:10){
     inits <- paste(initials,initials_vals[j,],sep="=")
-    inputs <- c(inits,paste(colnames(params),as.character(params[1,]),sep="="))
+    firstDay <- as.character(as.Date(init_cond[j,9],format="%m/%d/%Y")+1,format="%m/%d/%Y")
+    start <- paste("SimStart",firstDay,sep="=")
+    inputs <- c(inits,start,paste(colnames(params),as.character(params[1,]),sep="="))
     write(inputs, file = paste(in_path, "input_mcmc_",j,".txt", sep = ""), sep="")
   }
 }
