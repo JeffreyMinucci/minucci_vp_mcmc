@@ -117,7 +117,6 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
                                  optimize_vars[["bound_u"]], verbose) 
   } else inputdata <- start_point
   static_params <- as.data.frame(inputdata[,!(colnames(inputdata) %in%  optimize_vars[["names"]])],stringsAsFactors=F)
-  str(static_params)
 
   ###   2) Write VP inputs
   write_vp_input_sites_c(params = inputdata[1,], in_path = dir_structure[["input"]],init_cond=initial_conditions)
@@ -153,7 +152,6 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
     print(paste("MCMC step: ",i-1," log-likelihood: ",like_trace[i-1]))
     proposal <- metropolis_proposal_c(inputdata[i-1,optimize_vars[["names"]]],optimize_vars[["scales"]],step_length)
     proposal_all <- cbind(static_params,proposal)
-    #print(static_params)
     write_vp_input_sites_c(proposal_all, dir_structure[["input"]], init_cond = initial_conditions)
     if(!(any(proposal > bound_u) | any((proposal < bound_l)))){
       run_vp_parallel_c(i,dir_structure[["exe_folder"]],dir_structure[["exe_file"]],
