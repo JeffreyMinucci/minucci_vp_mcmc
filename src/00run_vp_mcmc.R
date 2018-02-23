@@ -52,19 +52,22 @@
 #   $mcmc_params A list of the params passed to the function
 
 new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length=.25, vp_dir, dir_structure=NULL, static_vars, 
-                        optimize_vars, start_point = NULL, logs=T, verbose=T, debug=F){
+                        optimize_vars, parallel=T, start_point = NULL, logs=T, verbose=T, debug=F){
   
   
   #load packages if needed
   require(doParallel)
   
   #parallel back end
-  if(Sys.info()[4]=="DZ2626UJMINUCCI") cores<-10 else cores<-detectCores-1
-  if(cores == 1) registerDoSEQ()
-  cl <- makeCluster(cores)
-  registerDoParallel(cl)
-  on.exit(stopCluster(cl))
-  on.exit(registerDoSEQ(),add=T)
+  if(parallel){
+    if(Sys.info()[4]=="DZ2626UJMINUCCI") cores<-10 else cores<-detectCores-1
+    if(cores == 1) registerDoSEQ() else{
+      cl <- makeCluster(cores)
+      registerDoParallel(cl)
+      on.exit(stopCluster(cl))
+      on.exit(registerDoSEQ(),add=T)
+    }
+  } else registerDoSEQ()
   if(verbose) print(paste("Number of cores utilized:",getDoParWorkers()))
   
   #If directory structure is not given, use default
