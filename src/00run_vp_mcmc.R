@@ -120,6 +120,8 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
                                  optimize_vars[["bound_u"]], verbose) 
   } else inputdata <- start_point
   static_params <- as.data.frame(inputdata[,!(colnames(inputdata) %in%  optimize_vars[["names"]])],stringsAsFactors=F)
+  colnames(static_params) <- colnames(inputdata)[!(colnames(inputdata) %in%  optimize_vars[["names"]])]
+  print(colnames(static_params))
 
   ###   2) Write VP inputs
   write_vp_input_sites_c(params = inputdata[1,], in_path = dir_structure[["input"]],init_cond=initial_conditions)
