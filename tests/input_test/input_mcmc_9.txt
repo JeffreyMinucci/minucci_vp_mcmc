@@ -1,0 +1,8 @@
+ICWorkerAdults=12982.227
+ICWorkerBrood=187.8268
+ICWorkerLarvae=0
+ICWorkerEggs=0
+InitColPollen=1502.55964
+InitColNectar=3267.3923
+SimStart=04/29/2015
+SimEnd=8/25/2015
