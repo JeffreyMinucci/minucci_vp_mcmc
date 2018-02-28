@@ -28,6 +28,7 @@ generate_vpstart <- function(static_names, static_vals, to_optimize, lower, uppe
   if(length(static_names) != length(static_vals)){
     stop("Vectors of static param names and their values are not the same length!")
   }
+  if(any(upper < lower)) stop ("All upper bounds must be greater than lower bounds!")
   values <- runif(length(to_optimize),lower,upper)
   inputdf <- data.frame(t(static_vals), t(values),stringsAsFactors = FALSE)
   colnames(inputdf) <- c(static_names,to_optimize)

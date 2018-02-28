@@ -20,7 +20,9 @@
 # @return: nothing - VP writes the output to the out_path directory
 ##
 
+
 run_vp_parallel <- function(i,exe_path, exe_name, vrp_name, in_path, out_path,log_path=NULL,logs=T,debug=F){
+  require(doParallel)
   vpdir_executable <- paste(exe_path,exe_name,sep="")
   if(debug) print(paste("Number of cores utilized:",getDoParWorkers()))
   foreach(j=1:10) %dopar% {
