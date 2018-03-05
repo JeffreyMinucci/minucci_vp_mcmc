@@ -22,6 +22,8 @@
 require(compiler)
 
 metropolis_proposal <- function(current,scales,step){
+  if(length(current) != length(scales)) stop("length of current and scales are not equal")
+  if(length(step) >1) stop("step should be a single value")
   new <- rep(0,length(current))
   new <- current + (rnorm(length(current),0,1) * scales * step)
   return(new)
