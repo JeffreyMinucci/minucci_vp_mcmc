@@ -121,7 +121,6 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
   } else inputdata <- start_point
   static_params <- as.data.frame(inputdata[,!(colnames(inputdata) %in%  optimize_vars[["names"]])],stringsAsFactors=F)
   colnames(static_params) <- colnames(inputdata)[!(colnames(inputdata) %in%  optimize_vars[["names"]])]
-  print(colnames(static_params))
 
   ###   2) Write VP inputs
   write_vp_input_sites_c(params = inputdata[1,], in_path = dir_structure[["input"]],init_cond=initial_conditions)
@@ -154,9 +153,10 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
   accepts <- 0 #initialize accept tracker
   
   for(i in 2:nsims){
-    print(paste("MCMC step: ",i-1," log-likelihood: ",like_trace[i-1]))
+    if(verbose) print(paste("MCMC step: ",i-1," log-likelihood: ",like_trace[i-1]))
     proposal <- metropolis_proposal_c(inputdata[i-1,optimize_vars[["names"]]],optimize_vars[["scales"]],step_length)
     proposal_all <- cbind(static_params,proposal)
+    if(length(optimize_vars[["names"]])==1) colnames(proposal_all)[length(static_vars[["names"]])+1] <- optimize_vars[["names"]]
     write_vp_input_sites_c(proposal_all, dir_structure[["input"]], init_cond = initial_conditions)
     if(!(any(proposal > bound_u) | any((proposal < bound_l)))){
       run_vp_parallel_c(i,dir_structure[["exe_folder"]],dir_structure[["exe_file"]],
@@ -238,6 +238,7 @@ continue_vp_mcmc <- function(nsims, old_vp_mcmc, step_length=NULL){
   
   #add new results to old results and output vp_mcmc object
   new_results$param_trace <- rbind(orig_param_trace,new_results$param_trace[-1,])
+  row.names(new_results$param_trace) <- c(1:nrow(new_results$param_trace))
   new_results$like_trace <- c(orig_like_trace, new_results$like_trace[-1])
   new_results$mcmc_params$nsims <- length(new_results$like_trace)
   new_results$mcmc_params$step_length <- new_params$step_length
