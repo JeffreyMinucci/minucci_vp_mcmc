@@ -3,7 +3,7 @@
 
 context("Computing likelihood for 10 sites and 3 dates")
 
-test_that("output is a single number", {
+test_that("output is a double", {
   test_data <- matrix(rep(10,30),ncol=3)
   test_preds <- matrix(rep(15,30),ncol=3)
   test_var <- 1
