@@ -24,6 +24,6 @@ source(paste(vpdir,"src/06propose_mh_step.R",sep=""))
 
 
 #run tests and write output to unit_testing.md
-write(paste("Tests run on:",Sys.time()), file = paste(vpdir, "unit_testing.md", sep = ""))
-capture.output(test_dir('tests/'), file= paste(vpdir, "unit_testing.md", sep = ""),append=T)
+write(paste("Tests run on:",Sys.time()), file = paste(vpdir, "unit_testing.txt", sep = ""))
+capture.output(test_dir('tests/'), file= paste(vpdir, "unit_testing.txt", sep = ""),append=T)
 

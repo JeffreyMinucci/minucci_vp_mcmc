@@ -1,18 +1,11 @@
-Tests run on: 2018-03-05 13:31:11
-v | OK F W S | Context
-/ |  0       | Initial parameterization- |  1       | Initial parameterization\ |  2       | Initial parameterization| |  3       | Initial parameterization/ |  4       | Initial parameterization- |  5       | Initial parameterization\ |  6       | Initial parameterizationv |  6       | Initial parameterization [2.0 s]
-/ |  0       | Writing VP input .txt files- |  1       | Writing VP input .txt files\ |  2       | Writing VP input .txt files| |  3       | Writing VP input .txt files/ |  4       | Writing VP input .txt files- |  5       | Writing VP input .txt files\ |  6       | Writing VP input .txt files| |  7       | Writing VP input .txt files/ |  8       | Writing VP input .txt files- |  9       | Writing VP input .txt files\ | 10       | Writing VP input .txt files| | 11       | Writing VP input .txt files/ | 12       | Writing VP input .txt filesv | 12       | Writing VP input .txt files [0.2 s]
-/ |  0       | Executing VP via wrapper (10 runs)- |  1       | Executing VP via wrapper (10 runs)\ |  2       | Executing VP via wrapper (10 runs)| |  3       | Executing VP via wrapper (10 runs)/ |  4       | Executing VP via wrapper (10 runs)- |  5       | Executing VP via wrapper (10 runs)v |  5       | Executing VP via wrapper (10 runs) [9.5 s]
-/ |  0       | Executing VP via wrapper (10 runs)- |  1       | Executing VP via wrapper (10 runs)\ |  2       | Executing VP via wrapper (10 runs)| |  3       | Executing VP via wrapper (10 runs)/ |  4       | Executing VP via wrapper (10 runs)- |  5       | Executing VP via wrapper (10 runs)\ |  6       | Executing VP via wrapper (10 runs)| |  7       | Executing VP via wrapper (10 runs)/ |  8       | Executing VP via wrapper (10 runs)- |  9       | Executing VP via wrapper (10 runs)\ | 10       | Executing VP via wrapper (10 runs)| | 11       | Executing VP via wrapper (10 runs)/ | 12       | Executing VP via wrapper (10 runs)- | 13       | Executing VP via wrapper (10 runs)v | 13       | Executing VP via wrapper (10 runs) [0.3 s]
-/ |  0       | Computing likelihood for 10 sites and 3 dates- |  1       | Computing likelihood for 10 sites and 3 dates\ |  2       | Computing likelihood for 10 sites and 3 dates| |  3       | Computing likelihood for 10 sites and 3 datesv |  3       | Computing likelihood for 10 sites and 3 dates
-/ |  0       | Generate new metropolis-Hastings proposal - |  1       | Generate new metropolis-Hastings proposal \ |  2       | Generate new metropolis-Hastings proposal | |  3       | Generate new metropolis-Hastings proposal / |  4       | Generate new metropolis-Hastings proposal - |  5       | Generate new metropolis-Hastings proposal \ |  6       | Generate new metropolis-Hastings proposal | |  7       | Generate new metropolis-Hastings proposal v |  7       | Generate new metropolis-Hastings proposal 
-/ |  0       | Running vp_mcmc full algorithm- |  1       | Running vp_mcmc full algorithm\ |  2       | Running vp_mcmc full algorithm| |  3       | Running vp_mcmc full algorithm/ |  4       | Running vp_mcmc full algorithm- |  5       | Running vp_mcmc full algorithm\ |  6       | Running vp_mcmc full algorithm| |  7       | Running vp_mcmc full algorithm/ |  8       | Running vp_mcmc full algorithm- |  9       | Running vp_mcmc full algorithm\ | 10       | Running vp_mcmc full algorithm| | 11       | Running vp_mcmc full algorithm/ | 12       | Running vp_mcmc full algorithm- | 13       | Running vp_mcmc full algorithm\ | 14       | Running vp_mcmc full algorithm| | 15       | Running vp_mcmc full algorithmv | 15       | Running vp_mcmc full algorithm [49.1 s]
-/ |  0       | Extending a vp_mcmc run from previous run object- |  1       | Extending a vp_mcmc run from previous run object\ |  2       | Extending a vp_mcmc run from previous run object| |  3       | Extending a vp_mcmc run from previous run object/ |  4       | Extending a vp_mcmc run from previous run object- |  5       | Extending a vp_mcmc run from previous run object\ |  6       | Extending a vp_mcmc run from previous run object| |  7       | Extending a vp_mcmc run from previous run objectv |  7       | Extending a vp_mcmc run from previous run object [24.1 s]
+Tests run on: 2018-03-06 10:07:27
+Initial parameterization: ......
+Writing VP input .txt files: ............
+Executing VP via wrapper (10 runs): .....
+Executing VP via wrapper (10 runs): .............
+Computing likelihood for 10 sites and 3 dates: ...
+Generate new metropolis-Hastings proposal : .......
+Running vp_mcmc full algorithm: ...............
+Extending a vp_mcmc run from previous run object: .......
 
-== Results =====================================================================
-Duration: 85.5 s
-
-OK:       68
-Failed:   0
-Warnings: 0
-Skipped:  0
+== DONE ========================================================================
