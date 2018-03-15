@@ -16,8 +16,11 @@ test_that("returns full vp_mcmc object with valid results", {
   vp_binary <- "VarroaPop.exe"
   vp_field_data <- paste(vpdir,"data/raw/field_bee_areas.csv",sep="")
   vp_field_initials <- paste(vpdir,"data/raw/field_initial_conditions.csv",sep="")
+  vpdir_neonic_prof <- paste(vpdir, "data/processed/neonic_profiles/",sep="")
+  vpdir_weather <- paste(vpdir, "data/external/weather/",sep="")
   dir_structure = list(input = vpdir_in, output = vpdir_out, log = vpdir_log, exe_folder = vpdir_exe,
-                       exe_file = vp_binary, field_pops = vp_field_data, field_initials = vp_field_initials)
+                       exe_file = vp_binary, field_pops = vp_field_data, field_initials = vp_field_initials,
+                       weather = vpdir_weather, neonic_profiles = vpdir_neonic_prof)
   SimEnd <- "8/25/2015"
   koc <- 60
   kow <- 2
@@ -32,7 +35,7 @@ test_that("returns full vp_mcmc object with valid results", {
   bound_u <- c(5,30,48,16) #upper bondary of the domain for each parameter to be optimized
   optimize_list <- list(names = optimize_names, bound_l = bound_l, bound_u = bound_u)
   results <- new_vp_mcmc_c(vrp_filename = vrp_filename, nsims = 5, step_length = .5, vp_dir=vpdir, dir_structure = dir_structure, static_vars = static_list, 
-                                optimize_vars = optimize_list, logs = F, verbose = F)
+                                optimize_vars = optimize_list, logs = T, verbose = F)
   expect_true(class(results) == "vp_mcmc_run")
   expect_equal(dim(results$param_trace),c(5,length(static_names)+length(optimize_names)))
   expect_equal(length(results$like_trace),nrow(results$param_trace))
@@ -56,8 +59,11 @@ test_that("can run with only one static var and one optimize var", {
   vp_binary <- "VarroaPop.exe"
   vp_field_data <- paste(vpdir,"data/raw/field_bee_areas.csv",sep="")
   vp_field_initials <- paste(vpdir,"data/raw/field_initial_conditions.csv",sep="")
+  vpdir_neonic_prof <- paste(vpdir, "data/processed/neonic_profiles/",sep="")
+  vpdir_weather <- paste(vpdir, "data/external/weather/",sep="")
   dir_structure = list(input = vpdir_in, output = vpdir_out, log = vpdir_log, exe_folder = vpdir_exe,
-                       exe_file = vp_binary, field_pops = vp_field_data, field_initials = vp_field_initials)
+                       exe_file = vp_binary, field_pops = vp_field_data, field_initials = vp_field_initials,
+                       weather = vpdir_weather, neonic_profiles = vpdir_neonic_prof)
   SimEnd <- "8/25/2015"
   koc <- 60
   kow <- 2
@@ -94,8 +100,11 @@ test_that("logs are properly created", {
   vp_binary <- "VarroaPop.exe"
   vp_field_data <- paste(vpdir,"data/raw/field_bee_areas.csv",sep="")
   vp_field_initials <- paste(vpdir,"data/raw/field_initial_conditions.csv",sep="")
+  vpdir_neonic_prof <- paste(vpdir, "data/processed/neonic_profiles/",sep="")
+  vpdir_weather <- paste(vpdir, "data/external/weather/",sep="")
   dir_structure = list(input = vpdir_in, output = vpdir_out, log = vpdir_log, exe_folder = vpdir_exe,
-                       exe_file = vp_binary, field_pops = vp_field_data, field_initials = vp_field_initials)
+                       exe_file = vp_binary, field_pops = vp_field_data, field_initials = vp_field_initials,
+                       weather = vpdir_weather, neonic_profiles = vpdir_neonic_prof)
   SimEnd <- "8/25/2015"
   koc <- 60
   kow <- 2
@@ -132,8 +141,11 @@ test_that("returns full vp_mcmc object with valid results", {
   vp_binary <- "VarroaPop.exe"
   vp_field_data <- paste(vpdir,"data/raw/field_bee_areas.csv",sep="")
   vp_field_initials <- paste(vpdir,"data/raw/field_initial_conditions.csv",sep="")
+  vpdir_neonic_prof <- paste(vpdir, "data/processed/neonic_profiles/",sep="")
+  vpdir_weather <- paste(vpdir, "data/external/weather/",sep="")
   dir_structure = list(input = vpdir_in, output = vpdir_out, log = vpdir_log, exe_folder = vpdir_exe,
-                       exe_file = vp_binary, field_pops = vp_field_data, field_initials = vp_field_initials)
+                       exe_file = vp_binary, field_pops = vp_field_data, field_initials = vp_field_initials,
+                       weather = vpdir_weather, neonic_profiles = vpdir_neonic_prof)
   SimEnd <- "8/25/2015"
   koc <- 60
   kow <- 2

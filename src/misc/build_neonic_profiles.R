@@ -63,5 +63,5 @@ data_processed_dir <- paste(vpdir,"data/processed/neonic_profiles/",sep="")
 
 for(j in 1:10){
   to_write <- cbind(pollen_contam[,c(1,j+1)],nectar_contam[,j+1])
-  write.table(to_write,paste(data_processed_dir,"neonic_profile_",j,".csv",sep=""),row.names=F,col.names=F,sep=",")
+  write.table(to_write,paste(data_processed_dir,"neonic_profile_",j,".csv",sep=""),row.names=F,col.names=F,sep=",",quote=F)
 }

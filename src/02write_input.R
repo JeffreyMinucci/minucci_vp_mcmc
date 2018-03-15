@@ -27,11 +27,12 @@ write_vp_input <- function(params, in_path){
 # @param params: vector of VarroaPop inputs to be written to .txt file 
 # @in_path: directory to write input .txt file to (e.g. D:/minucci_vp_mcmc/input/)
 # @init_cond: data frame of initial field values
+# @data_path: path to data folder - to use custom neonic contam
 #
 # @return: nothing - writes inputs to a .txt file in in_path for VP to read
 #
 
-write_vp_input_sites <- function(params, in_path, init_cond){
+write_vp_input_sites <- function(params, in_path, init_cond, neonic_path){
   cm2_to_bees <- 1.45
   cm2_to_brood <- 3.43 #based on size of brood cells (.54 x .54 cm)
   cm2_to_larvae <- 3.43 *.66 #based on size of brood cells and time spend as larvae vs egg
@@ -45,7 +46,11 @@ write_vp_input_sites <- function(params, in_path, init_cond){
     inits <- paste(initials,initials_vals[j,],sep="=")
     firstDay <- as.character(as.Date(init_cond[j,9],format="%m/%d/%Y")+1,format="%m/%d/%Y")
     start <- paste("SimStart",firstDay,sep="=")
-    inputs <- c(inits,start,paste(colnames(params),as.character(params[1,]),sep="="))
+    #neonic_file <- paste("NecPolFileName=","neonic_profile_",j,".csv",sep="")
+    #neonic_file <- gsub("/", "\\",paste("NecPolFileName=",neonic_path,"neonic_profile_test.csv",sep=""),fixed=T)
+    neonic_file <- paste("NecPolFileName=",neonic_path,"neonic_profile_test.csv",sep="")
+    neonic_enable <- "NecPolFileEnable=true"
+    inputs <- c(inits,start,neonic_enable,neonic_file,paste(colnames(params),as.character(params[1,]),sep="="))
     write(inputs, file = paste(in_path, "input_mcmc_",j,".txt", sep = ""), sep="")
   }
 }

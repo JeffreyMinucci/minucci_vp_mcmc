@@ -35,6 +35,9 @@
 #   $exe_file name of the vp executable file 
 #   $field_pops path to the field population data (to fit)
 #   $field_initials path to the initial colony conditions
+#   $weather path to folder containing weather file
+#   $neonic_profiles path to folder containing neonic profiles
+#
 # @param static_vars A list containing:
 #   $names A vector of the names of the parameters to set but keep static
 #   $values A vector of the values of the parameters to set but keep static
@@ -79,8 +82,11 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
     vp_binary <- "VarroaPop.exe"
     vp_field_data <- paste(vp_dir,"data/raw/field_bee_areas.csv",sep="")
     vp_field_initials <- paste(vp_dir,"data/raw/field_initial_conditions.csv",sep="")
+    vpdir_weather <- paste(vp_dir, "data/external/weather/",sep="")
+    vpdir_neonic_prof <- paste(vp_dir, "data/processed/neonic_profiles/")
     dir_structure = list(input = vpdir_in, output = vpdir_out, log = vpdir_log, exe_folder = vpdir_exe,
-                         exe_file = vp_binary, field_pops = vp_field_data, field_initials = vp_field_initials)
+                         exe_file = vp_binary, field_pops = vp_field_data, field_initials = vp_field_initials,
+                         weather = vpdir_weather, neonic_profiles = vpdir_neonic_prof)
   }
   
   #if scales of parameters to optimize is not given, set at 1/10th of range
@@ -123,7 +129,8 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
   colnames(static_params) <- colnames(inputdata)[!(colnames(inputdata) %in%  optimize_vars[["names"]])]
 
   ###   2) Write VP inputs
-  write_vp_input_sites_c(params = inputdata[1,], in_path = dir_structure[["input"]],init_cond=initial_conditions)
+  write_vp_input_sites_c(params = inputdata[1,], in_path = dir_structure[["input"]],init_cond=initial_conditions,
+                         neonic_path = dir_structure[["neonic_profiles"]])
   
   
   ###   3) Run VP simulation
@@ -157,7 +164,8 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
     proposal <- metropolis_proposal_c(inputdata[i-1,optimize_vars[["names"]]],optimize_vars[["scales"]],step_length)
     proposal_all <- cbind(static_params,proposal)
     if(length(optimize_vars[["names"]])==1) colnames(proposal_all)[length(static_vars[["names"]])+1] <- optimize_vars[["names"]]
-    write_vp_input_sites_c(proposal_all, dir_structure[["input"]], init_cond = initial_conditions)
+    write_vp_input_sites_c(proposal_all, dir_structure[["input"]], init_cond = initial_conditions,
+                           neonic_path = dir_structure[["neonic_profiles"]])
     if(!(any(proposal > bound_u) | any((proposal < bound_l)))){
       run_vp_parallel_c(i,dir_structure[["exe_folder"]],dir_structure[["exe_file"]],
                       vrp_filename, dir_structure[["input"]],
