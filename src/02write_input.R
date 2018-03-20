@@ -48,7 +48,7 @@ write_vp_input_sites <- function(params, in_path, init_cond, neonic_path){
     start <- paste("SimStart",firstDay,sep="=")
     #neonic_file <- paste("NecPolFileName=","neonic_profile_",j,".csv",sep="")
     #neonic_file <- gsub("/", "\\",paste("NecPolFileName=",neonic_path,"neonic_profile_test.csv",sep=""),fixed=T)
-    neonic_file <- paste("NecPolFileName=",neonic_path,"neonic_profile_test.csv",sep="")
+    neonic_file <- paste("NecPolFileName=",neonic_path,"neonic_profile_",j,".csv",sep="")
     neonic_enable <- "NecPolFileEnable=true"
     inputs <- c(inits,start,neonic_enable,neonic_file,paste(colnames(params),as.character(params[1,]),sep="="))
     write(inputs, file = paste(in_path, "input_mcmc_",j,".txt", sep = ""), sep="")

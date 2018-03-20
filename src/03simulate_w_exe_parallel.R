@@ -33,7 +33,7 @@ run_vp_parallel <- function(i,exe_path, exe_name, vrp_name, in_path, out_path,lo
     
     if(logs){
       vpdir_command <- paste(exe_path, vrp_name, 
-                           " /b /or ", out_path, outputfile, 
+                           " /or ", out_path, outputfile, 
                            " /i ", in_path, inputfile, " /ol ", log_path, logfile, sep="")
     } else {
       vpdir_command <- paste(exe_path, vrp_name, 

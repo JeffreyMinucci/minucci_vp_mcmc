@@ -40,6 +40,25 @@ run_vp<- function(i = 1,exe_path, exe_name, vrp_name, input_name, in_path,
   system2(vpdir_executable, vpdir_command)
 }
 
+run_vp_gui <- function(i = 1,exe_path, exe_name, vrp_name, input_name, in_path, 
+                       out_path,log_path=NULL,logs=T,debug=F,iterate_inputs=F){
+  inputfile<- ifelse(iterate_inputs==T,paste(input_name,i,sep="_"),input_name)
+  outputfile<- paste("results",i,".txt", sep="")
+  logfile<- paste("log",i,".txt", sep="")
+  vpdir_executable <- paste(exe_path,exe_name,sep="")
+  if(logs){
+    vpdir_command <- paste(exe_path, vrp_name, 
+                           " /or ", out_path, outputfile, 
+                           " /i ", in_path, inputfile, " /ol ", log_path, logfile, sep="")
+  } else {
+    vpdir_command <- paste(exe_path, vrp_name, 
+                           " /or ", out_path, outputfile, 
+                           " /i ", in_path, inputfile, sep="")
+  }
+  if(debug) print(paste(exe_name, vpdir_command, sep=" "))
+  system2(vpdir_executable, vpdir_command)
+}
+
 
 #compiled version
 require(compiler)

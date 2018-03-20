@@ -83,7 +83,7 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
     vp_field_data <- paste(vp_dir,"data/raw/field_bee_areas.csv",sep="")
     vp_field_initials <- paste(vp_dir,"data/raw/field_initial_conditions.csv",sep="")
     vpdir_weather <- paste(vp_dir, "data/external/weather/",sep="")
-    vpdir_neonic_prof <- paste(vp_dir, "data/processed/neonic_profiles/")
+    vpdir_neonic_prof <- paste(vp_dir, "data/processed/neonic_profiles/", sep="")
     dir_structure = list(input = vpdir_in, output = vpdir_out, log = vpdir_log, exe_folder = vpdir_exe,
                          exe_file = vp_binary, field_pops = vp_field_data, field_initials = vp_field_initials,
                          weather = vpdir_weather, neonic_profiles = vpdir_neonic_prof)
