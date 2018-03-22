@@ -30,10 +30,11 @@ run_vp_parallel <- function(i,exe_path, exe_name, vrp_name, in_path, out_path,lo
     inputfile<- paste("input_mcmc_",j,".txt",sep="")
     outputfile<- paste("results",i,"_",j,".txt", sep="")
     logfile<- paste("log",i,"_",j,".txt", sep="")
-    
+    vrp_name <- paste("default_jeff_",j,".vrp",sep="") #temporary fix for github issue #2
+
     if(logs){
       vpdir_command <- paste(exe_path, vrp_name, 
-                           " /or ", out_path, outputfile, 
+                           " /b /or ", out_path, outputfile, 
                            " /i ", in_path, inputfile, " /ol ", log_path, logfile, sep="")
     } else {
       vpdir_command <- paste(exe_path, vrp_name, 
