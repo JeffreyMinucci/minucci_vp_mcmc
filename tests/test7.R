@@ -43,6 +43,14 @@ test_that("returns full vp_mcmc object with valid results", {
   expect_true(results$accept_rate <= 1 & results$accept_rate >=0)
   expect_true(!anyNA(results$param_trace))
   
+  #check that pesticide contamination is showing up in first month
+  vpdir_test_results <- paste(vp_dir, "tests/output_test/", sep = "")
+  results <- read_output_c(1,vpdir_test_results)
+  expect_true(any(results[1:30,21,1] > 0))  #nectar
+  expect_true(any(results[1:30,21,10] > 0))
+  expect_true(any(results[1:30,19,1] > 0)) #pollen
+  expect_true(any(results[1:30,19,10] > 0))
+  
 })
 
 

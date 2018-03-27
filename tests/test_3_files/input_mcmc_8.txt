@@ -1,0 +1,10 @@
+ICWorkerAdults=10891.30766715
+ICWorkerBrood=11958.30626781
+ICWorkerLarvae=6942.078528
+ICWorkerEggs=3471.039264
+InitColPollen=2928.902486269
+InitColNectar=3552.819673059
+SimStart=04/30/2015
+NecPolFileEnable=true
+NecPolFileName=d:/Git_files/minucci_vp_mcmc/tests/universal_test_files/neonic_profiles/neonic_profile_8.csv
+SimEnd=8/25/2015

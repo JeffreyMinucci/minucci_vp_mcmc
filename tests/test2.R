@@ -7,9 +7,9 @@ test_that("Txt files created and all given parameters included", {
   if(Sys.info()[4]=="DZ2626UJMINUCCI"){
     vp_dir<-path.expand("d:/Git_files/minucci_vp_mcmc/")   #This needs to be set to your repo path
   }
-  vpdir_testin <- paste(vp_dir, "tests/input_test/", sep = "")
-  initial_dir <- paste(vp_dir,"data/raw/field_initial_conditions.csv",sep="")
-  vpdir_neonic_prof <- paste(vp_dir, "data/processed/neonic_profiles/",sep="")
+  vpdir_testin <- paste(vp_dir, "tests/test_2_files/", sep = "")
+  initial_dir <- paste(vp_dir,"tests/universal_test_files/field_initial_conditions.csv",sep="")
+  vpdir_neonic_prof <- paste(vp_dir, "tests/universal_test_files/neonic_profiles/",sep="")
   input_df_3 <- data.frame("SimEnd"=c("8/25/2015"),"two"=c(321),"three"=c(5),stringsAsFactors = F)
   initial_conditions <- read.csv(initial_dir,stringsAsFactors=FALSE)
   write_vp_input_sites_c(input_df_3,vpdir_testin,initial_conditions, vpdir_neonic_prof)
@@ -36,9 +36,9 @@ test_that("Initial conditions are written correctly for sites", {
   if(Sys.info()[4]=="DZ2626UJMINUCCI"){
     vp_dir<-path.expand("d:/Git_files/minucci_vp_mcmc/")   #This needs to be set to your repo path
   }
-  vpdir_testin <- paste(vp_dir, "tests/input_test/", sep = "")
-  initial_dir <- paste(vp_dir,"data/raw/field_initial_conditions.csv",sep="")
-  vpdir_neonic_prof <- paste(vp_dir, "data/processed/neonic_profiles/",sep="")
+  vpdir_testin <- paste(vp_dir, "tests/test_2_files/", sep = "")
+  initial_dir <- paste(vp_dir,"tests/universal_test_files/field_initial_conditions.csv",sep="")
+  vpdir_neonic_prof <- paste(vp_dir, "tests/universal_test_files/neonic_profiles/",sep="")
   input_df_1 <- data.frame("SimEnd"=c("8/25/2015"))
   initial_conditions <- read.csv(initial_dir,stringsAsFactors=FALSE)
   write_vp_input_sites_c(input_df_1,vpdir_testin,initial_conditions, vpdir_neonic_prof)
