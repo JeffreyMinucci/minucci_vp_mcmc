@@ -1,0 +1,152 @@
+---
+  title: "VarroaPop MCMC main notebook"
+author: "Jeffrey Minucci"
+date: "February 20, 2018"
+output: 
+  html_document:
+  toc: yes
+---
+  
+  ```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE)
+```
+<base target="_top"/>
+  <br>
+  
+  
+  Introduction
+=====================
+  
+  Code to infer VarroaPop parameter distributions given bee colony field data featuring neonicotinoid exposure.
+
+  
+  Set up for user's computer
+====================
+```{r}
+#Determine path directory based on the user machine######
+#jeff epa dev machine
+if(Sys.info()[4]=="DZ2626UJMINUCCI"){
+vpdir<-path.expand("d:/Git_files/minucci_vp_mcmc/")
+vrp_filename <- "default_jeff.vrp"
+}
+
+#tom epa windows 2
+if(Sys.info()[4]=="DZ2626UTPURUCKE"){
+vpdir<-path.expand("k:/git/minucci_vp_mcmc/")
+vrp_filename <- "default_tom.vrp" #will need to be generated from default_jeff.vrp with pointer to Tom's weather file location
+}
+
+```
+
+
+Set some VP initial parameters
+============================
+```{r}
+#simulation start and end
+#must have mm/dd/yyyy format
+SimEnd <- "8/25/2015"
+IPollenLoad <- 15
+INectarLoad <- 30
+IPollenTrips <- 4
+INectarTrips <- 17
+NeedResourcesToLive <- "false"
+
+#static parameter list
+static_names <- c("SimEnd","IPollenLoad","INectarLoad","IPollenTrips","INectarTrips", "NeedResourcesToLive")
+static_values <- c(SimEnd,IPollenLoad,INectarLoad, IPollenTrips, INectarTrips, NeedResourcesToLive)
+static_list <- list(names = static_names, values = static_values)
+
+
+```
+
+
+Choose VP parameters to optimize
+===================================
+```{r}
+#parameters to optimize via MCMC
+optimize_names <- c("ICQueenStrength","ICForagerLifespan", "AIAdultLD50", "AIAdultSlope",
+                    "AILarvaLD50", "AILarvaSlope", "AIHalfLife")
+#   Notes: ICForagerLifespan appears to be converted to integer by removing decimal places in VP
+bound_l <- c(1, 4,  .0001, 2, .0001, 2, 0.01) #lower bondary of the domain for each parameter to be optimized
+bound_u <- c(5, 16, .05,   9, .05,   9, 50) #upper bondary of the domain for each parameter to be optimized
+#scales <- (bound_u-bound_l)/10 #for now using the range divided by 10
+optimize_list <- list(names = optimize_names, bound_l = bound_l, bound_u = bound_u)
+
+```
+
+Run MCMC algorithm
+===================================
+  
+  Run MCMC for VarroaPop, fitting all 10 sites in parallel
+
+```{r}
+## Test vp MCMC function
+#library(compiler)
+source(paste(vpdir,"src/00run_vp_mcmc.R",sep = "")) 
+system.time(test_results <- new_vp_mcmc_c(nsims = 5000, step_length = .5, vp_dir=vpdir, static_vars = static_list, 
+                                          optimize_vars = optimize_list, logs = F, verbose = T, debug=F))[3]
+str(test_results)
+print(paste("Acceptance rate:", test_results$accept_rate))
+#saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18.rds",sep = ""))
+
+```
+
+Visualize results of test run
+====================================
+  Acceptance rate (should be ~.25)
+```{r}
+test_results <- readRDS(file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18.rds",sep = ""))
+print(paste("Acceptance rate:", test_results$accept_rate))
+```
+
+Plot likelihood trace
+```{r}
+plot(test_results$like_trace, type='l')
+```
+
+
+Plot parameter traces and posteriors 
+```{r}
+library(MCMCvis)
+MCMCtrace(as.matrix(test_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]]),filename="test_fulltrace",
+          iter=5000,wd=paste(vpdir,"reports/figures/",sep=""))
+```
+
+
+Continuing where we left off in the MCMC run
+========================================
+  We can also adjust the step length. 
+```{r}
+
+test_results <- continue_vp_mcmc(30000,test_results,step_length = .3)
+#saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p4.rds",sep = ""))
+
+```
+
+Visualize results
+```{r}
+plot(test_results$like_trace, type='l')
+plot(test_results$param_trace$ICForagerLifespan, type='l')
+plot(test_results$param_trace$ICQueenStrength, type='l')
+par(mfrow=c(1,2))
+hist(test_results$param_trace$ICForagerLifespan)
+hist(test_results$param_trace$ICQueenStrength)
+par(mfrow=c(1,1))
+MCMCtrace(as.matrix(test_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]]),filename="test_65k_last60",
+          iter=60000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
+test_results$accept_rate
+
+
+```
+
+
+Diagnostics using the coda package (and others)
+```{r}
+results <- mcmc(test_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]])
+effectiveSize(results) 
+geweke.diag(results)
+geweke.plot(results,ask=T)
+heidel.diag(results)
+#last_20 <- mcmc(results[15000:35000,],start=15000)
+heidel.diag(last_20)
+```

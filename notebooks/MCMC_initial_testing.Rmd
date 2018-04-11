@@ -22,7 +22,6 @@ Code for initial testing of the VarroaPop MCMC algorithm
 ### Current bugs:
 
 ### To implement:
-* Neonic exposure events for each site
 * Resolve the hive that split?
 
 
@@ -122,7 +121,7 @@ We can also adjust the step length.
 ```{r}
 
 test_results <- continue_vp_mcmc(10000,test_results,step_length = .7)
-#saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/test_2_23_18.rds",sep = ""))
+saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/test_2_23_18.rds",sep = ""))
 
 ```
 
@@ -138,6 +137,5 @@ par(mfrow=c(1,1))
 MCMCtrace(as.matrix(test_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]]),filename="test_15k",
           iter=10000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
 test_results$accept_rate
-
 
 ```
