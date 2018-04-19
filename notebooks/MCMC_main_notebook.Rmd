@@ -95,7 +95,7 @@ Visualize results of test run
 ====================================
   Acceptance rate (should be ~.25)
 ```{r}
-test_results <- readRDS(file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p4.rds",sep = ""))
+test_results <- readRDS(file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p5.rds",sep = ""))
 print(paste("Acceptance rate:", test_results$accept_rate))
 ```
 
@@ -118,7 +118,12 @@ Continuing where we left off in the MCMC run
   We can also adjust the step length. 
 ```{r}
 
-test_results <- continue_vp_mcmc(30000,test_results,step_length = .1)
+test_results <- continue_vp_mcmc(50000,test_results,step_length = .2)
+saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p6.rds",sep = ""))
+test_results <- continue_vp_mcmc(50000,test_results,step_length = .2)
+saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p6.rds",sep = ""))
+
+test_results <- continue_vp_mcmc(100000,test_results,step_length = .2)
 #saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p5.rds",sep = ""))
 
 ```
@@ -132,8 +137,8 @@ par(mfrow=c(1,2))
 hist(test_results$param_trace$ICForagerLifespan)
 hist(test_results$param_trace$ICQueenStrength)
 par(mfrow=c(1,1))
-MCMCtrace(as.matrix(test_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]]),filename="test_95k_last40",
-          iter=40000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
+MCMCtrace(as.matrix(test_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]]),filename="test_245k_last150",
+          iter=150000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
 test_results$accept_rate
 
 
@@ -143,6 +148,7 @@ test_results$accept_rate
 Diagnostics using the coda package (and others)
 ```{r}
 library(coda)
+library(fitR)
 results <- mcmc(test_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]])
 effectiveSize(results) 
 geweke.diag(results)
@@ -150,4 +156,21 @@ geweke.plot(results,ask=T)
 heidel.diag(results)
 last_40 <- mcmc(results[45000:95000,],start=45000)
 heidel.diag(last_40)
+autocorr.plot(results) 
+
+#estimate burn in period
+plotESSBurn(results)
+results_burned <- burnAndThin(results, burn = 2000)
+plot(results_burned)
+heidel.diag(results_burned)
+autocorr.plot(results_burned) 
+
+```
+
+```{r}
+summary(results_burned)
+results_bt <- burnAndThin(results,burn=2000,thin=1000)
+autocorr.plot(results_bt)
+plot(results_bt)
+
 ```
