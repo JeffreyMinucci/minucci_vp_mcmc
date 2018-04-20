@@ -119,12 +119,16 @@ Continuing where we left off in the MCMC run
 ```{r}
 
 test_results <- continue_vp_mcmc(50000,test_results,step_length = .2)
-saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p6.rds",sep = ""))
+saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p8.rds",sep = ""))
 test_results <- continue_vp_mcmc(50000,test_results,step_length = .2)
-saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p6.rds",sep = ""))
+saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p8.rds",sep = ""))
 
 test_results <- continue_vp_mcmc(100000,test_results,step_length = .2)
-#saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p5.rds",sep = ""))
+saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p8.rds",sep = ""))
+
+
+test_results <- continue_vp_mcmc(100000,test_results,step_length = .2)
+saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p8.rds",sep = ""))
 
 ```
 
@@ -137,8 +141,8 @@ par(mfrow=c(1,2))
 hist(test_results$param_trace$ICForagerLifespan)
 hist(test_results$param_trace$ICQueenStrength)
 par(mfrow=c(1,1))
-MCMCtrace(as.matrix(test_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]]),filename="test_245k_last150",
-          iter=150000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
+MCMCtrace(as.matrix(test_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]]),filename="test_345k_thin1k",
+          iter=345000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
 test_results$accept_rate
 
 
@@ -170,7 +174,14 @@ autocorr.plot(results_burned)
 ```{r}
 summary(results_burned)
 results_bt <- burnAndThin(results,burn=2000,thin=1000)
+summary(results_bt)
 autocorr.plot(results_bt)
 plot(results_bt)
+raftery.diag(results_burned, q=0.5, r=.1,s=0.95,converge.eps=0.001)
+raftery.diag(results_bt, q=0.5, r=0.1,s=0.95,converge.eps=0.001) #http://www.cryoung.org/wp-content/uploads/2014/09/MCMC-workshop-MBARI-2006.pdf
+
+
+MCMCtrace(results_bt,filename="test_345k_thin1k",
+          iter=345000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
 
 ```
