@@ -141,16 +141,18 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
   
   ###   4) Read outputs
   #output_list = vector("list",nsims)
+  output_trace = array(rep(NA, 10*3*nsims),c(10,3,nsims))
   output_array <- read_output_c(i,dir_structure[["output"]])
   #output_list[i] <- output_array
 
   ###   5) Calculate likelihood of field data (colony size - adults) given these parameters
   var_est <- mean(c(var(bee_initial),var(bee_pops[,1]),var(bee_pops[,2]),var(bee_pops[,3]))) #for now get var from actual data
-  like <- vp_loglik_sites_c(bee_pops,t(sapply(1:dim(output_array)[3],
-                                            function(x, site) rowSums(output_array[days_sampled[site,]+1,c(2:4),x])
-                                       , site=1:dim(output_array)[3])),var_est,debug=F)
+  pop_est <- t(sapply(1:(dim(output_array)[3]),function(x, site) rowSums(output_array[days_sampled[x,]+1,c(2:4),x])))
+  #print(pop_est)
+  like <- vp_loglik_sites_c(bee_pops,pop_est,var_est,debug=F)
   like_trace<- rep(0,nsims) #initialize vector to hold likelihood trace
   like_trace[1] <- like
+  output_trace[,,i] <- pop_est
   
   
   ###  Repeat nsims:
@@ -174,9 +176,11 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
                       vrp_filename, dir_structure[["input"]],
                       dir_structure[["output"]],dir_structure[["log"]],logs=logs,debug=debug)
       output_array <- read_output_c(i,dir_structure[["output"]])
-      like <- vp_loglik_sites_c(bee_pops,t(sapply(1:dim(output_array)[3],
-                                                  function(x, site) rowSums(output_array[days_sampled[site,]+1,c(2:4),x])
-                                                  , site=1:dim(output_array)[3])),var_est,debug=F)
+      #print(output_array)
+      pop_est <- t(sapply(1:(dim(output_array)[3]),function(x, site) rowSums(output_array[days_sampled[x,]+1,c(2:4),x])))
+      like <- vp_loglik_sites_c(bee_pops,pop_est,var_est,debug=F)
+      output_trace[,,i] <- pop_est
+      
       if(debug){
         print(paste("proposal: ",like))
         print(paste("current: ",like_trace[i-1]))
@@ -211,7 +215,8 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
   mcmc_params <- list(vrp_filename=vrp_filename, nsims=nsims, step_length=step_length, vp_dir=vp_dir, 
                      dir_structure=dir_structure, static_vars = static_vars, 
                      optimize_vars= optimize_vars, logs=logs, verbose=verbose, debug=debug)
-  toReturn <- list(param_trace = inputdata, like_trace = like_trace, accept_rate = accepts/nsims, mcmc_params = mcmc_params)
+  toReturn <- list(param_trace = inputdata, like_trace = like_trace, accept_rate = accepts/nsims, mcmc_params = mcmc_params,
+                   prop_out_trace = output_trace)
   class(toReturn) <- "vp_mcmc_run"
   return(toReturn)
   
@@ -241,6 +246,7 @@ continue_vp_mcmc <- function(nsims, old_vp_mcmc, step_length=NULL){
   orig_param_trace <- old_vp_mcmc$param_trace[complete.cases(old_vp_mcmc$param_trace),]
   orig_nsims <- nrow(orig_param_trace)
   orig_like_trace <- old_vp_mcmc$like_trace[1:orig_nsims]
+  orig_prop_out_trace <- old_vp_mcmc$prop_out_trace[,,1:orig_nsims]
   
   #modify previous parameters for new run
   new_params <- orig_params
@@ -257,6 +263,7 @@ continue_vp_mcmc <- function(nsims, old_vp_mcmc, step_length=NULL){
   new_results$like_trace <- c(orig_like_trace, new_results$like_trace[-1])
   new_results$mcmc_params$nsims <- length(new_results$like_trace)
   new_results$mcmc_params$step_length <- new_params$step_length
+  new_results$prop_out_trace <- abind(orig_prop_out_trace, new_results$prop_out_trace[,,-1], along=3)
   return(new_results)
 }
 

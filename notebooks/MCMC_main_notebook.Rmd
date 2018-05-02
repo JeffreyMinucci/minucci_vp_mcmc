@@ -83,7 +83,7 @@ Run MCMC algorithm
 ## Test vp MCMC function
 #library(compiler)
 source(paste(vpdir,"src/00run_vp_mcmc.R",sep = "")) 
-system.time(test_results <- new_vp_mcmc_c(nsims = 5000, step_length = .5, vp_dir=vpdir, static_vars = static_list, 
+system.time(test_results <- new_vp_mcmc_c(nsims = 10, step_length = .5, vp_dir=vpdir, static_vars = static_list, 
                                           optimize_vars = optimize_list, logs = F, verbose = T, debug=F))[3]
 str(test_results)
 print(paste("Acceptance rate:", test_results$accept_rate))
@@ -95,7 +95,7 @@ Visualize results of test run
 ====================================
   Acceptance rate (should be ~.25)
 ```{r}
-test_results <- readRDS(file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p5.rds",sep = ""))
+test_results <- readRDS(file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p9.rds",sep = ""))
 print(paste("Acceptance rate:", test_results$accept_rate))
 ```
 
@@ -116,19 +116,19 @@ MCMCtrace(as.matrix(test_results$param_trace[, test_results$mcmc_params$optimize
 Continuing where we left off in the MCMC run
 ========================================
   We can also adjust the step length. 
-```{r}
+```{r, echo=FALSE,results='hide'}
 
-test_results <- continue_vp_mcmc(50000,test_results,step_length = .2)
-saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p8.rds",sep = ""))
-test_results <- continue_vp_mcmc(50000,test_results,step_length = .2)
-saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p8.rds",sep = ""))
-
-test_results <- continue_vp_mcmc(100000,test_results,step_length = .2)
-saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p8.rds",sep = ""))
-
+test_results <- continue_vp_mcmc(20000,test_results,step_length = .2)
+saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p9.rds",sep = ""))
+test_results <- continue_vp_mcmc(30000,test_results,step_length = .2)
+saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p9.rds",sep = ""))
 
 test_results <- continue_vp_mcmc(100000,test_results,step_length = .2)
-saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p8.rds",sep = ""))
+saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p9.rds",sep = ""))
+
+
+test_results <- continue_vp_mcmc(100000,test_results,step_length = .2)
+saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p9.rds",sep = ""))
 
 ```
 
@@ -141,8 +141,8 @@ par(mfrow=c(1,2))
 hist(test_results$param_trace$ICForagerLifespan)
 hist(test_results$param_trace$ICQueenStrength)
 par(mfrow=c(1,1))
-MCMCtrace(as.matrix(test_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]]),filename="test_345k_thin1k",
-          iter=345000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
+MCMCtrace(as.matrix(test_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]]),filename="test_575k_full",
+          iter=575000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
 test_results$accept_rate
 
 
@@ -174,14 +174,18 @@ autocorr.plot(results_burned)
 ```{r}
 summary(results_burned)
 results_bt <- burnAndThin(results,burn=2000,thin=1000)
+#results_bt2 <- burnAndThin(results,burn=35000, thin = 1000)
 summary(results_bt)
 autocorr.plot(results_bt)
+heidel.diag(results_bt)
+#heidel.diag(results_bt2)
 plot(results_bt)
 raftery.diag(results_burned, q=0.5, r=.1,s=0.95,converge.eps=0.001)
-raftery.diag(results_bt, q=0.5, r=0.1,s=0.95,converge.eps=0.001) #http://www.cryoung.org/wp-content/uploads/2014/09/MCMC-workshop-MBARI-2006.pdf
+raftery.diag(results_bt, q=0.5, r=0.1,s=0.95,converge.eps=0.001)
+#http://www.cryoung.org/wp-content/uploads/2014/09/MCMC-workshop-MBARI-2006.pdf
 
 
-MCMCtrace(results_bt,filename="test_345k_thin1k",
-          iter=345000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
+MCMCtrace(results_bt,filename="test_575k_thin1k",
+          iter=575000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
 
 ```

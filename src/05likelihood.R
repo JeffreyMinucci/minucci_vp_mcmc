@@ -42,6 +42,7 @@ vp_loglik_dates <- function(actual,pred,var){
 # @return: a loglikelihood value
 
 vp_loglik_sites <- function(actual,pred,var,debug=FALSE){
+  if(! all.equal(dim(pred),c(10,3))) stop("Prediction matrix must be 10 rows by 3 columns!")
   residuals <- c(actual[,1]-pred[,1],actual[,2]-pred[,2],actual[,3]-pred[,3])
   ll <- (length(actual)/-2)*log(2*pi) - (length(actual)/2)*log(var)- (1/(2*var)) * sum(residuals^2)
   if(debug) print(residuals)
