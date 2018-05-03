@@ -132,7 +132,7 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
   colnames(static_params) <- colnames(inputdata)[!(colnames(inputdata) %in%  optimize_vars[["names"]])]
 
   ###   2) Write VP inputs
-  write_vp_input_sites_c(params = inputdata[1,], in_path = dir_structure[["input"]],init_cond=initial_conditions,
+  write_vp_input_sites_c(params = inputdata[1,colnames(inputdata) != "sd"], in_path = dir_structure[["input"]],init_cond=initial_conditions,
                          neonic_path = dir_structure[["neonic_profiles"]])
   
   
@@ -149,10 +149,16 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
   #output_list[i] <- output_array
 
   ###   5) Calculate likelihood of field data (colony size - adults) given these parameters
-  var_est <- mean(c(var(bee_initial),var(bee_pops[,1]),var(bee_pops[,2]),var(bee_pops[,3]))) #for now get var from actual data
+  if("sd" %in% colnames(inputdata)){
+    sd_est = inputdata[1,"sd"]
+  }
+  else{
+    sd_est <- mean(c(sd(bee_initial),sd(bee_pops[,1]),sd(bee_pops[,2]),sd(bee_pops[,3]))) #for now get var from actual data
+  }
+  #print(sd_est)
   pop_est <- t(sapply(1:(dim(output_array)[3]),function(x, site) rowSums(output_array[days_sampled[x,]+1,c(2:4),x])))
   #print(pop_est)
-  like <- vp_loglik_sites_c(bee_pops,pop_est,var_est,debug=F)
+  like <- vp_loglik_sites_c(bee_pops,pop_est,sd_est^2,debug=F)
   like_trace<- rep(0,nsims) #initialize vector to hold likelihood trace
   like_trace[1] <- like
   output_trace[,,i] <- pop_est
@@ -173,16 +179,20 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
     proposal_all <- cbind(static_params,proposal)
     if(debug) print(proposal_all)
     if(length(optimize_vars[["names"]])==1) colnames(proposal_all)[length(static_vars[["names"]])+1] <- optimize_vars[["names"]]
-    write_vp_input_sites_c(proposal_all, dir_structure[["input"]], init_cond = initial_conditions,
-                           neonic_path = dir_structure[["neonic_profiles"]])
     if(!(any(proposal > bound_u) | any((proposal < bound_l)))){
+      write_vp_input_sites_c(proposal_all[names(inputdata) != "sd"], dir_structure[["input"]], init_cond = initial_conditions,
+                             neonic_path = dir_structure[["neonic_profiles"]])
       run_vp_parallel_c(i,dir_structure[["exe_folder"]],dir_structure[["exe_file"]],
                       vrp_filename, dir_structure[["input"]],
                       dir_structure[["output"]],dir_structure[["log"]],logs=logs,debug=debug)
       output_array <- read_output_c(i,dir_structure[["output"]])
       #print(output_array)
+      if("sd" %in% colnames(proposal_all)){
+        sd_est = proposal_all[1,"sd"]
+        if(debug) print(paste("Proposed sd =", sd_est))
+      }
       pop_est <- t(sapply(1:(dim(output_array)[3]),function(x, site) rowSums(output_array[days_sampled[x,]+1,c(2:4),x])))
-      like <- vp_loglik_sites_c(bee_pops,pop_est,var_est,debug=F)
+      like <- vp_loglik_sites_c(bee_pops,pop_est,sd_est^2,debug=F)
       output_trace[,,i] <- pop_est
       
       if(debug){

@@ -47,7 +47,7 @@ Set some VP initial parameters
 SimEnd <- "8/25/2015"
 IPollenLoad <- 15
 INectarLoad <- 30
-IPollenTrips <- 4
+IPollenTrips <- 7
 INectarTrips <- 17
 NeedResourcesToLive <- "false"
 
@@ -65,10 +65,10 @@ Choose VP parameters to optimize
 ```{r}
 #parameters to optimize via MCMC
 optimize_names <- c("ICQueenStrength","ICForagerLifespan", "AIAdultLD50", "AIAdultSlope",
-                    "AILarvaLD50", "AILarvaSlope", "AIHalfLife")
+                    "AILarvaLD50", "AILarvaSlope", "AIHalfLife", "sd")
 #   Notes: ICForagerLifespan appears to be converted to integer by removing decimal places in VP
-bound_l <- c(1, 4,  .0001, 2, .0001, 2, 0.01) #lower bondary of the domain for each parameter to be optimized
-bound_u <- c(5, 16, .05,   9, .05,   9, 50) #upper bondary of the domain for each parameter to be optimized
+bound_l <- c(1, 4,  .0001, 2, .0001, 2, 0.01, 0) #lower bondary of the domain for each parameter to be optimized
+bound_u <- c(5, 16, .05,   9, .05,   9, 50, 100000) #upper bondary of the domain for each parameter to be optimized
 #scales <- (bound_u-bound_l)/10 #for now using the range divided by 10
 optimize_list <- list(names = optimize_names, bound_l = bound_l, bound_u = bound_u)
 
@@ -83,11 +83,11 @@ Run MCMC algorithm
 ## Test vp MCMC function
 #library(compiler)
 source(paste(vpdir,"src/00run_vp_mcmc.R",sep = "")) 
-system.time(test_results <- new_vp_mcmc_c(nsims = 10000, step_length = .3, vp_dir=vpdir, static_vars = static_list, 
+system.time(test_results <- new_vp_mcmc_c(nsims = 10, step_length = .1, vp_dir=vpdir, static_vars = static_list, 
                                           optimize_vars = optimize_list, logs = F, verbose = F, debug=F))[3]
 #str(test_results)
 print(paste("Acceptance rate:", test_results$accept_rate))
-saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_5_2_18.rds",sep = ""))
+#saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_5_2_18.rds",sep = ""))
 
 ```
 
@@ -95,7 +95,7 @@ Visualize results of test run
 ====================================
   Acceptance rate (should be ~.25)
 ```{r}
-test_results <- readRDS(file=paste(vpdir,"output/mcmc_run_objects/run_3_28_18_p9.rds",sep = ""))
+test_results <- readRDS(file=paste(vpdir,"output/mcmc_run_objects/run_5_2_18.rds",sep = ""))
 print(paste("Acceptance rate:", test_results$accept_rate))
 ```
 
@@ -134,6 +134,13 @@ test_results <- continue_vp_mcmc(100000,test_results,step_length = .2)
 
 Visualize results
 ```{r}
+test_results$accept_rate
+test_results$bounds_rate
+
+true_accept<- (nrow(test_results$param_trace)*test_results$accept_rate) /
+  ((1-test_results$bounds_rate)*nrow(test_results$param_trace))
+true_accept
+
 plot(test_results$like_trace, type='l')
 plot(test_results$param_trace$ICForagerLifespan, type='l')
 plot(test_results$param_trace$ICQueenStrength, type='l')
@@ -143,7 +150,6 @@ hist(test_results$param_trace$ICQueenStrength)
 par(mfrow=c(1,1))
 MCMCtrace(as.matrix(test_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]]),filename="test_575k_full",
           iter=575000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
-test_results$accept_rate
 
 
 ```
