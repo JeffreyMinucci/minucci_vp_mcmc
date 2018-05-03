@@ -53,6 +53,9 @@
 #   $like_trace A vector of likelihoods at each MCMC step
 #   $accept_rate The fraction of proposals that were accepted
 #   $mcmc_params A list of the params passed to the function
+#   $prop_out_trace A 10 x 3 x iteration array giving each proposals predictions for the 10 sites by 3 dates
+#     where out of bounds proposals have arrays of NA
+#   #bounds_rate The fraction of proposals that were out of bounds
 
 new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length=.25, vp_dir, dir_structure=NULL, static_vars, 
                         optimize_vars, parallel=T, start_point = NULL, logs=T, verbose=T, debug=F){
@@ -162,6 +165,7 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
   ###      Return to 6
   
   accepts <- 0 #initialize accept tracker
+  bounds <- 0 #initial out of bounds tracker
   
   for(i in 2:nsims){
     if(verbose) print(paste("MCMC step: ",i-1," log-likelihood: ",like_trace[i-1]))
@@ -188,22 +192,19 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
       if(log(runif(1)) < (like-like_trace[i-1])){
         inputdata <- rbind(inputdata,proposal_all,make.row.names=F)
         like_trace[i] <- like
-        #output_list[i] <- output_array
         accepts <- accepts + 1
       }
       else{
         if(verbose) print(paste("Rejecting log-likelihood: ",like))
         inputdata <- rbind(inputdata,inputdata[i-1,],make.row.names=F)
         like_trace[i] <- like_trace[i-1]
-        #output_list[i] <- output_list[i-1]
-        
       }
     }
     else{
       if(verbose) print("Proposal out of bounds!")
       inputdata <- rbind(inputdata,inputdata[i-1,],make.row.names=F)
       like_trace[i] <- like_trace[i-1]
-      #output_list[i] <- output_list[i-1]
+      bounds <- bounds + 1
     }
   }
   if(verbose){
@@ -216,7 +217,7 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
                      dir_structure=dir_structure, static_vars = static_vars, 
                      optimize_vars= optimize_vars, logs=logs, verbose=verbose, debug=debug)
   toReturn <- list(param_trace = inputdata, like_trace = like_trace, accept_rate = accepts/nsims, mcmc_params = mcmc_params,
-                   prop_out_trace = output_trace)
+                   prop_out_trace = output_trace, bounds_rate = bounds/nsims)
   class(toReturn) <- "vp_mcmc_run"
   return(toReturn)
   
@@ -247,6 +248,8 @@ continue_vp_mcmc <- function(nsims, old_vp_mcmc, step_length=NULL){
   orig_nsims <- nrow(orig_param_trace)
   orig_like_trace <- old_vp_mcmc$like_trace[1:orig_nsims]
   orig_prop_out_trace <- old_vp_mcmc$prop_out_trace[,,1:orig_nsims]
+  orig_accept_rate <- old_vp_mcmc$accept_rate
+  orig_bounds_rate <- old_vp_mcmc$bounds_rate
   
   #modify previous parameters for new run
   new_params <- orig_params
@@ -261,9 +264,14 @@ continue_vp_mcmc <- function(nsims, old_vp_mcmc, step_length=NULL){
   new_results$param_trace <- rbind(orig_param_trace,new_results$param_trace[-1,])
   row.names(new_results$param_trace) <- c(1:nrow(new_results$param_trace))
   new_results$like_trace <- c(orig_like_trace, new_results$like_trace[-1])
+  new_results$accept_rate <- orig_accept_rate*(orig_nsims/(orig_nsims+nsims)) + new_results$accept_rate*(nsims/(orig_nsims+nsims))
   new_results$mcmc_params$nsims <- length(new_results$like_trace)
   new_results$mcmc_params$step_length <- new_params$step_length
   new_results$prop_out_trace <- abind(orig_prop_out_trace, new_results$prop_out_trace[,,-1], along=3)
+  new_results$bounds_rate <- ifelse(!is.null(orig_bounds_rate), #TODO: remove this backwards compatibility after 1 run
+                                    orig_bounds_rate*(orig_nsims/(orig_nsims+nsims)) + new_results$bounds_rate*(nsims/(orig_nsims+nsims)),
+                                    new_results$bounds_rate)
+  
   return(new_results)
 }
 
