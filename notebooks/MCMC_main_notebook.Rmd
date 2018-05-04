@@ -83,11 +83,11 @@ Run MCMC algorithm
 ## Test vp MCMC function
 #library(compiler)
 source(paste(vpdir,"src/00run_vp_mcmc.R",sep = "")) 
-system.time(test_results <- new_vp_mcmc_c(nsims = 10, step_length = .1, vp_dir=vpdir, static_vars = static_list, 
+system.time(test_results <- new_vp_mcmc_c(nsims = 20000, step_length = .15, vp_dir=vpdir, static_vars = static_list, 
                                           optimize_vars = optimize_list, logs = F, verbose = F, debug=F))[3]
 #str(test_results)
 print(paste("Acceptance rate:", test_results$accept_rate))
-#saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_5_2_18.rds",sep = ""))
+saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_5_3_18.rds",sep = ""))
 
 ```
 
@@ -108,8 +108,8 @@ plot(test_results$like_trace, type='l')
 Plot parameter traces and posteriors 
 ```{r}
 library(MCMCvis)
-MCMCtrace(as.matrix(test_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]]),filename="test2_10k_first9k",
-          iter=9000,wd=paste(vpdir,"reports/figures/",sep=""))
+MCMCtrace(as.matrix(test_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]]),filename="test3_20k_all",
+          iter=20000,wd=paste(vpdir,"reports/figures/",sep=""))
 ```
 
 
