@@ -124,9 +124,9 @@ source(paste(vpdir,"src/00run_vp_mcmc.R",sep = ""))
 #                                          optimize_vars = optimize_list, logs = F, verbose = F, debug=F)
 #saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_5_11_18_p2.rds",sep = ""))
 
-for(i in 1:6){
+for(i in 1:20){
   test_results <- continue_vp_mcmc(10000,test_results,step_length = .25)
-  saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_5_11_18_p2.rds",sep = ""))
+  saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_5_11_18_p3.rds",sep = ""))
 }
 
 test_results <- continue_vp_mcmc(10,test_results,step_length = .2)
@@ -190,8 +190,8 @@ autocorr.plot(results_burned)
 
 ```{r}
 summary(results_burned)
-results_bt <- burnAndThin(results,burn=20000,thin=100)
-results_bt2 <- burnAndThin(results,burn=20000,thin=1000)
+results_bt <- burnAndThin(results,burn=50000,thin=100)
+results_bt2 <- burnAndThin(results,burn=50000,thin=1000)
 results_bt3 <- burnAndThin(results,burn=50000,thin=1000)
 #results_bt2 <- burnAndThin(results,burn=35000, thin = 1000)
 summary(results_bt)
@@ -210,15 +210,24 @@ geweke.diag(results_bt2)
 geweke.diag(results_bt3)
 
 
-MCMCtrace(results,filename="test4_65k",
+MCMCtrace(results,filename="test4_265k",
           iter=65000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
 
-MCMCtrace(results_bt,filename="test4_65k_thin100",
+MCMCtrace(results_bt,filename="test4_265k_thin100",
           iter=65000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
 
 
-MCMCtrace(results_bt2,filename="test6_65k_thin1000",
-          iter=195000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
+MCMCtrace(results_bt2,filename="test6_265k_thin1k_burn50k",
+          iter=265000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
 
+
+```
+
+```{r}
+#get maximum likelihood parameter estimates
+test_results$param_trace[which(test_results$like_trace == max(test_results$like_trace)),][1,]
+
+#get 95% c.i. for AILarvaLD50
+quantile(test_results$param_trace$AILarvaLD50[50000:length(test_results$like_trace)], c(.05,.95))
 
 ```
