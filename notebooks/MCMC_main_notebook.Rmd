@@ -95,7 +95,7 @@ Visualize results of test run
 ====================================
   Acceptance rate (should be ~.25)
 ```{r}
-test_results <- readRDS(file=paste(vpdir,"output/mcmc_run_objects/run_5_11_18_p2.rds",sep = ""))
+test_results <- readRDS(file=paste(vpdir,"output/mcmc_run_objects/run_5_11_18_p4.rds",sep = ""))
 print(paste("Acceptance rate:", test_results$accept_rate))
 ```
 
@@ -125,8 +125,8 @@ source(paste(vpdir,"src/00run_vp_mcmc.R",sep = ""))
 #saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_5_11_18_p2.rds",sep = ""))
 
 for(i in 1:20){
-  test_results <- continue_vp_mcmc(10000,test_results,step_length = .25)
-  saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_5_11_18_p3.rds",sep = ""))
+  test_results <- continue_vp_mcmc(5000,test_results,step_length = .25)
+  saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_5_11_18_p4.rds",sep = ""))
 }
 
 test_results <- continue_vp_mcmc(10,test_results,step_length = .2)
@@ -170,6 +170,7 @@ Diagnostics using the coda package (and others)
 ```{r}
 library(coda)
 library(fitR)
+library(MCMCvis)
 results <- mcmc(test_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]])
 effectiveSize(results) 
 geweke.diag(results)
@@ -217,8 +218,8 @@ MCMCtrace(results_bt,filename="test4_265k_thin100",
           iter=65000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
 
 
-MCMCtrace(results_bt2,filename="test6_265k_thin1k_burn50k",
-          iter=265000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
+MCMCtrace(results_bt2,filename="test4_290k_thin1k_burn50k",
+          iter=290000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
 
 
 ```
@@ -227,7 +228,39 @@ MCMCtrace(results_bt2,filename="test6_265k_thin1k_burn50k",
 #get maximum likelihood parameter estimates
 test_results$param_trace[which(test_results$like_trace == max(test_results$like_trace)),][1,]
 
+#plot mle fit to data
+
+
 #get 95% c.i. for AILarvaLD50
 quantile(test_results$param_trace$AILarvaLD50[50000:length(test_results$like_trace)], c(.05,.95))
+
+```
+
+```{r}
+
+vp_field_data <- paste(vpdir,"data/raw/field_bee_areas.csv",sep="")
+field_data <- read.csv(vp_field_data)
+bees_per_cm2 <- 1.45  #convert area of bees to individuals  
+bee_pops <- as.matrix(field_data[,c("bees_cm2_5","bees_cm2_6","bees_cm2_8")]) * bees_per_cm2 
+bee_initial <- round(field_data[,c("bees_cm2_4")] * bees_per_cm2,0)
+bee_pops <- cbind(bee_initial,bee_pops)
+
+#fitted mle
+fitted <- test_results$prop_out_trace[,,which(test_results$like_trace == max(test_results$like_trace))[1]]
+fitted <- cbind(bee_initial,fitted)
+fitted
+
+#sd
+sd_mle <- test_results$param_trac[which(test_results$like_trace == max(test_results$like_trace))[1],"sd"][1]
+
+pdf(paste(vpdir,"/reports/figures/mle_pop_fitted.pdf",sep=""),w=8,h=14)
+par(mfrow=c(5,2))
+for(i in 1:10){
+  plot(c(4,5,6,8),bee_pops[i,]/1000,type='p', pch=19,ylim=c(0,45),xlab="Month of year",ylab="# of bees (1000s)")
+  lines(c(4,5,6,8),fitted[i,]/1000,col='darkgrey',lwd=2)
+  lines(c(4,5,6,8),(fitted[i,]+sd_mle)/1000,col='darkgrey',lwd=2,lty=2)
+  lines(c(4,5,6,8),(fitted[i,]-sd_mle)/1000,col='darkgrey',lwd=2,lty=2)
+}
+dev.off()
 
 ```

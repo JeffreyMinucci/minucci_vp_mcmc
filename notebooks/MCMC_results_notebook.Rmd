@@ -1,0 +1,87 @@
+---
+title: "MCMC_results_notebook"
+author: "Jeff Minucci"
+date: "May 22, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+if(Sys.info()[4]=="DZ2626UJMINUCCI"){
+vpdir<-path.expand("d:/Git_files/minucci_vp_mcmc/")
+vrp_filename <- "default_jeff.vrp"
+}
+
+
+#code sources and packages
+library(coda)
+library(fitR)
+library(MCMCvis)
+library(devtools)
+install_github("quanted/VarroaPopWrapper",ref="master")
+library(VarroaPopWrapper)
+
+
+
+#load results
+main_results <- readRDS(file=paste(vpdir,"output/mcmc_run_objects/run_5_11_18_p4.rds",sep = ""))
+results <- mcmc(main_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]])
+results_bt <- burnAndThin(results,burn=50000,thin=1000)
+```
+
+
+
+```{r}
+#get maximum likelihood parameter estimates
+mle_pars <- test_results$param_trace[which(test_results$like_trace == max(test_results$like_trace)),][1,][names(mle_pars) != "sd"]
+
+
+#run sim with the mle
+source(paste(vpdir,"src/misc/run_one.R",sep = "")) 
+vrp_file <- paste(vpdir,'bin/',vrp_filename,sep="")
+mle_output <- run_one(mle_pars, vrp_file = vrp_file,save_files=T)
+
+
+#plot mle fit to data
+
+
+#get 95% c.i. for AILarvaLD50
+quantile(test_results$param_trace$AILarvaLD50[50000:length(test_results$like_trace)], c(.05,.95))
+
+```
+
+
+
+```{r}
+
+vp_field_data <- paste(vpdir,"data/raw/field_bee_areas.csv",sep="")
+field_data <- read.csv(vp_field_data)
+bees_per_cm2 <- 1.45  #convert area of bees to individuals  
+bee_pops <- as.matrix(field_data[,c("bees_cm2_5","bees_cm2_6","bees_cm2_8")]) * bees_per_cm2 
+bee_initial <- round(field_data[,c("bees_cm2_4")] * bees_per_cm2,0)
+bee_pops <- cbind(bee_initial,bee_pops)
+
+#fitted mle
+fitted <- test_results$prop_out_trace[,,which(test_results$like_trace == max(test_results$like_trace))[1]]
+fitted <- cbind(bee_initial,fitted)
+fitted
+
+#sd
+sd_mle <- test_results$param_trac[which(test_results$like_trace == max(test_results$like_trace))[1],"sd"][1]
+
+pdf(paste(vpdir,"/reports/figures/mle_pop_fitted.pdf",sep=""),w=8,h=14)
+par(mfrow=c(5,2))
+for(i in 1:10){
+  plot(c(4,5,6,8),bee_pops[i,]/1000,type='p', pch=19,ylim=c(0,45),xlab="Month of year",ylab="# of bees (1000s)")
+  lines(c(4,5,6,8),fitted[i,]/1000,col='darkgrey',lwd=2)
+  lines(c(4,5,6,8),(fitted[i,]+sd_mle)/1000,col='darkgrey',lwd=2,lty=2)
+  lines(c(4,5,6,8),(fitted[i,]-sd_mle)/1000,col='darkgrey',lwd=2,lty=2)
+}
+dev.off()
+
+```
+
+

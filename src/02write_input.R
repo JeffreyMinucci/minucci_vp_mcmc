@@ -27,7 +27,7 @@ write_vp_input <- function(params, in_path){
 # @param params: vector of VarroaPop inputs to be written to .txt file 
 # @in_path: directory to write input .txt file to (e.g. D:/minucci_vp_mcmc/input/)
 # @init_cond: data frame of initial field values
-# @data_path: path to data folder - to use custom neonic contam
+# @neonic_path: path to data folder - to use custom neonic contam
 #
 # @return: nothing - writes inputs to a .txt file in in_path for VP to read
 #
