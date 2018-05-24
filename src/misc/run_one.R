@@ -31,10 +31,10 @@ run_one <- function(parameters,
   initial_conditions <- read.csv(field_initials,stringsAsFactors=FALSE)
   write_vp_input_sites_c(parameters, in_path, initial_conditions, neonic_prof)
   to_return <- foreach(i=1:10) %do% {
-  #for(i in 1:10){
     in_filename = paste("input_mcmc_",i,".txt",sep="")
     run_vp(exe_file, vrp_file, paste(in_path,in_filename,sep=""), out_path, out_filename, log_path, logs, verbose)
-    result <- read_output(out_path, out_filename)
+    result <- VarroaPopWrapper::read_output(out_path, out_filename)
+    print(result)
     if(!save_files){
       if(logs){
         file.remove(paste(in_path,in_filename,sep=""), paste(log_path,"vp_log.txt",sep=""),

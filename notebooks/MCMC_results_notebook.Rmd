@@ -44,18 +44,50 @@ source(paste(vpdir,"src/misc/run_one.R",sep = ""))
 vrp_file <- paste(vpdir,'bin/',vrp_filename,sep="")
 mle_output <- run_one(mle_pars, vrp_file = vrp_file,save_files=T)
 
-
-#plot mle fit to data
+#example plot - first site
+mle_site1 <- mle_output[[1]]
+plot(1:length(mle_site1[,4]),(mle_site1[,4]+mle_site1[,5]),type='b')
 
 
 #get 95% c.i. for AILarvaLD50
-quantile(test_results$param_trace$AILarvaLD50[50000:length(test_results$like_trace)], c(.05,.95))
+quantile(test_results$param_trace$AILarvaLD50[50000:length(test_results$like_trace)], c(.025,.975))
 
 ```
 
+```{r}
+###calculate 95% confidence intervals around predictions, using our mcmc samples
 
+#take 10k random samples of our mcmc data (leaving out first 50k burn-in)
+#samples <- sample(50001:length(test_results$like_trace),10000,replace=F)
+#mcmc_bootstrap <- test_results$prop_out_trace[samples,]
+
+#convert proposal output trace to the steps actual output (stationary distribution)
+lagged_like <- c(999, test_results$like_trace[-length(test_results$like_trace)])
+rejects <- lagged_like == c(test_results$like_trace)
+predictions <- array(NA, dim=dim(test_results$prop_out_trace))
+for(i in 1:length(test_results$like_trace)){
+  if(!rejects[i]){
+    last_accept <-  test_results$prop_out_trace[,,i]
+  }
+  predictions[,,i] <- last_accept
+}
+
+#example: get 5 and 95% CI for all sites and dates
+low_ci <- matrix(rep(NA),ncol=3,nrow=10)
+high_ci <- matrix(rep(NA),ncol=3,nrow=10)
+for(i in 1:10){
+  for(j in 1:3){
+    cis <- quantile(predictions[i,j,50000:290000], c(.025,.9725))
+    low_ci[i,j] <- cis[1]
+    high_ci[i,j] <- cis[2]
+  }
+}
+
+```
 
 ```{r}
+###Plot mle fit to data
+
 
 vp_field_data <- paste(vpdir,"data/raw/field_bee_areas.csv",sep="")
 field_data <- read.csv(vp_field_data)
@@ -72,13 +104,17 @@ fitted
 #sd
 sd_mle <- test_results$param_trac[which(test_results$like_trace == max(test_results$like_trace))[1],"sd"][1]
 
-pdf(paste(vpdir,"/reports/figures/mle_pop_fitted.pdf",sep=""),w=8,h=14)
+pdf(paste(vpdir,"/reports/figures/mle_pop_fitted_95ci.pdf",sep=""),w=8,h=14)
 par(mfrow=c(5,2))
 for(i in 1:10){
   plot(c(4,5,6,8),bee_pops[i,]/1000,type='p', pch=19,ylim=c(0,45),xlab="Month of year",ylab="# of bees (1000s)")
   lines(c(4,5,6,8),fitted[i,]/1000,col='darkgrey',lwd=2)
-  lines(c(4,5,6,8),(fitted[i,]+sd_mle)/1000,col='darkgrey',lwd=2,lty=2)
-  lines(c(4,5,6,8),(fitted[i,]-sd_mle)/1000,col='darkgrey',lwd=2,lty=2)
+  #lines(c(4,5,6,8),(fitted[i,]+sd_mle)/1000,col='darkgrey',lwd=2,lty=2)
+  #lines(c(4,5,6,8),(fitted[i,]-sd_mle)/1000,col='darkgrey',lwd=2,lty=2)
+  
+  #bootstrapped 95% CI
+  lines(c(4,5,6,8),(cbind(bee_initial,low_ci)[i,])/1000,col='darkgrey',lwd=2,lty=2)
+  lines(c(4,5,6,8),(cbind(bee_initial,high_ci)[i,])/1000,col='darkgrey',lwd=2,lty=2)
 }
 dev.off()
 
