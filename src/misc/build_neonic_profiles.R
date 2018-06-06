@@ -15,6 +15,31 @@ if(Sys.info()[4]=="DZ2626UJMINUCCI"){
 #read raw data - unit = pollen clothianidin equivalents (ng g-1)
 neonic <- read.csv(paste(vpdir,"data/raw/field_neonic_exposure.csv",sep=""))
 
+
+### plots of raw data (for presentations, etc)
+clo_summary <- read.csv(paste(vpdir,'data/processed/field_neonic_means_peaks.csv',sep=""))
+clo_summary$Mean <- round(clo_summary$Mean,1)
+clo_summary$Peak <- round(clo_summary$Peak,1)
+sites <- colnames(neonic)
+per_corn <- c(22,1,49,30,22,19,39,8,31,30)
+pdf(paste(vpdir,"/reports/figures/field_clo_raw.pdf",sep=""),w=8,h=7)
+par(mfrow=c(2,2))
+for(i in 1:4){
+  plot(na.omit(cbind(c(0,3,6,9,13,15,20,24,28),neonic[,i+2])),type='n', pch=19,ylim=c(0,65),
+       lwd=2,xlab="Day",ylab="Clothianidin (ppb)")
+  rect(3,-10,10,80,col="cornflowerblue")
+  #lines(c(4,5,6,8),(fitted[i,]+sd_mle)/1000,col='darkgrey',lwd=2,lty=2)
+  #lines(c(4,5,6,8),(fitted[i,]-sd_mle)/1000,col='darkgrey',lwd=2,lty=2)
+  points(na.omit(cbind(c(0,3,6,9,13,15,20,24,28),neonic[,i+2])),pch=19)
+  lines(na.omit(cbind(c(0,3,6,9,13,15,20,24,28),neonic[,i+2])),lwd=2)
+  #text annotation
+  text(c(17,17),c(60,55), c(paste('Site:',clo_summary[i,1]),paste('Corn cover: ',per_corn[i],'%',sep="")),pos=4)
+}
+dev.off()
+
+
+
+
 #fit natural spline smoothers for each site
 to_fit <- seq(1,max(neonic$day),1)[!(seq(1,max(neonic$day),1) %in% neonic$day)]
 
