@@ -27,16 +27,21 @@ library(VarroaPopWrapper)
 
 
 #load results
-main_results <- readRDS(file=paste(vpdir,"output/mcmc_run_objects/run_5_11_18_p4.rds",sep = ""))
-results <- mcmc(main_results$param_trace[, test_results$mcmc_params$optimize_vars[["names"]]])
+main_results <- readRDS(file=paste(vpdir,"output/mcmc_run_objects/run_5_11_18_p5.rds",sep = ""))
+results <- mcmc(main_results$param_trace[, main_results$mcmc_params$optimize_vars[["names"]]])
 results_bt <- burnAndThin(results,burn=50000,thin=1000)
+
 ```
 
 
 
 ```{r}
+MCMCpstr(results_bt,median) #get median values
+
+
 #get maximum likelihood parameter estimates
-mle_pars <- test_results$param_trace[which(test_results$like_trace == max(test_results$like_trace)),][1,][names(mle_pars) != "sd"]
+mle_pars <- main_results$param_trace[which(main_results$like_trace == max(main_results$like_trace)),][1,]
+#mle_pars <- mle_pars[names(mle_pars) != "sd"]
 
 
 #run sim with the mle
@@ -50,7 +55,7 @@ plot(1:length(mle_site1[,4]),(mle_site1[,4]+mle_site1[,5]),type='b')
 
 
 #get 95% c.i. for AILarvaLD50
-quantile(test_results$param_trace$AILarvaLD50[50000:length(test_results$like_trace)], c(.025,.975))
+quantile(main_results$param_trace$AILarvaLD50[50000:length(main_results$like_trace)], c(.025,.975))
 
 ```
 
@@ -58,16 +63,16 @@ quantile(test_results$param_trace$AILarvaLD50[50000:length(test_results$like_tra
 ###calculate 95% confidence intervals around predictions, using our mcmc samples
 
 #take 10k random samples of our mcmc data (leaving out first 50k burn-in)
-#samples <- sample(50001:length(test_results$like_trace),10000,replace=F)
-#mcmc_bootstrap <- test_results$prop_out_trace[samples,]
+#samples <- sample(50001:length(main_results$like_trace),10000,replace=F)
+#mcmc_bootstrap <- main_results$prop_out_trace[samples,]
 
 #convert proposal output trace to the steps actual output (stationary distribution)
-lagged_like <- c(999, test_results$like_trace[-length(test_results$like_trace)])
-rejects <- lagged_like == c(test_results$like_trace)
-predictions <- array(NA, dim=dim(test_results$prop_out_trace))
-for(i in 1:length(test_results$like_trace)){
+lagged_like <- c(999, main_results$like_trace[-length(main_results$like_trace)])
+rejects <- lagged_like == c(main_results$like_trace)
+predictions <- array(NA, dim=dim(main_results$prop_out_trace))
+for(i in 1:length(main_results$like_trace)){
   if(!rejects[i]){
-    last_accept <-  test_results$prop_out_trace[,,i]
+    last_accept <-  main_results$prop_out_trace[,,i]
   }
   predictions[,,i] <- last_accept
 }
@@ -77,7 +82,7 @@ low_ci <- matrix(rep(NA),ncol=3,nrow=10)
 high_ci <- matrix(rep(NA),ncol=3,nrow=10)
 for(i in 1:10){
   for(j in 1:3){
-    cis <- quantile(predictions[i,j,50000:290000], c(.025,.9725))
+    cis <- quantile(predictions[i,j,50000:300000], c(.025,.9725))
     low_ci[i,j] <- cis[1]
     high_ci[i,j] <- cis[2]
   }
@@ -97,14 +102,27 @@ bee_initial <- round(field_data[,c("bees_cm2_4")] * bees_per_cm2,0)
 bee_pops <- cbind(bee_initial,bee_pops)
 
 #fitted mle
-fitted <- test_results$prop_out_trace[,,which(test_results$like_trace == max(test_results$like_trace))[1]]
+fitted <- main_results$prop_out_trace[,,which(main_results$like_trace == max(main_results$like_trace))[1]]
 fitted <- cbind(bee_initial,fitted)
 fitted
 
 #sd
-sd_mle <- test_results$param_trac[which(test_results$like_trace == max(test_results$like_trace))[1],"sd"][1]
+sd_mle <- main_results$param_trac[which(main_results$like_trace == max(main_results$like_trace))[1],"sd"][1]
 
-pdf(paste(vpdir,"/reports/figures/mle_pop_fitted_95ci.pdf",sep=""),w=8,h=14)
+#mean and peak clo concentrations
+clo_summary <- read.csv(paste(vpdir,'data/processed/field_neonic_means_peaks.csv',sep=""))
+clo_summary$Mean <- round(clo_summary$Mean,1)
+clo_summary$Peak <- round(clo_summary$Peak,1)
+
+
+#standard error for field data
+std.err <- function(x){sd(x)/sqrt(length(x))}
+
+hive_data <- read.csv(paste(vpdir,'data/raw/field_bee_areas_hive.csv', sep=""))
+
+
+
+pdf(paste(vpdir,"/reports/figures/mle_pop_fitted_ci_label.pdf",sep=""),w=8,h=14)
 par(mfrow=c(5,2))
 for(i in 1:10){
   plot(c(4,5,6,8),bee_pops[i,]/1000,type='p', pch=19,ylim=c(0,45),xlab="Month of year",ylab="# of bees (1000s)")
@@ -115,6 +133,31 @@ for(i in 1:10){
   #bootstrapped 95% CI
   lines(c(4,5,6,8),(cbind(bee_initial,low_ci)[i,])/1000,col='darkgrey',lwd=2,lty=2)
   lines(c(4,5,6,8),(cbind(bee_initial,high_ci)[i,])/1000,col='darkgrey',lwd=2,lty=2)
+  
+  #text annotation
+  text(c(6.5,6.5,6.5),c(44,39,34), c(paste('Site:',clo_summary[i,1]),paste('Mean clo.:',clo_summary[i,2], 'ppb'), 
+                               paste('Peak clo.:', clo_summary[i,3],'ppb')),pos=4)
+}
+dev.off()
+
+
+
+#just first 4 sites for iEMSs presentation
+per_corn <- c(22,1,49,30,22,19,39,8,31,30)
+pdf(paste(vpdir,"/reports/figures/field_pops_first4.pdf",sep=""),w=8,h=7)
+par(mfrow=c(2,2))
+for(i in 1:4){
+  plot(c(4,5,6,8),bee_pops[i,]/1000,type='n', pch=19,ylim=c(0,45),xlab="Month of year",ylab="# of bees (1000s)",lwd=2)
+  rect(4,-10,4.3,80,col="cornflowerblue")
+  points(c(4,5,6,8),bee_pops[i,]/1000, pch=19)
+  lines(c(4,5,6,8),bee_pops[i,]/1000,lwd=2)
+
+  #lines(c(4,5,6,8),fitted[i,]/1000,col='darkgrey',lwd=2)
+  #lines(c(4,5,6,8),(fitted[i,]+sd_mle)/1000,col='darkgrey',lwd=2,lty=2)
+  #lines(c(4,5,6,8),(fitted[i,]-sd_mle)/1000,col='darkgrey',lwd=2,lty=2)
+  
+  #text annotation
+  text(c(6.1,6.1),c(44,39), c(paste('Site:',clo_summary[i,1]),paste('Corn cover: ',per_corn[i],'%',sep="")),pos=4)
 }
 dev.off()
 
