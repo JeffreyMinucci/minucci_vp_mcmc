@@ -95,7 +95,10 @@ Visualize results of test run
 ====================================
   Acceptance rate (should be ~.25)
 ```{r}
-test_results <- readRDS(file=paste(vpdir,"output/mcmc_run_objects/run_5_11_18_p4.rds",sep = ""))
+#best run
+#test_results <- readRDS(file=paste(vpdir,"output/mcmc_run_objects/run_5_11_18_p5.rds",sep = ""))
+
+test_results <- readRDS(file=paste(vpdir,"output/mcmc_run_objects/run_5_25_18_p3.rds",sep = ""))
 print(paste("Acceptance rate:", test_results$accept_rate))
 ```
 
@@ -120,13 +123,13 @@ Continuing where we left off in the MCMC run
 source(paste(vpdir,"src/00run_vp_mcmc.R",sep = "")) 
 
 
-#test_results <- new_vp_mcmc_c(nsims = 15000, step_length = .15, vp_dir=vpdir, static_vars = static_list, 
-#                                          optimize_vars = optimize_list, logs = F, verbose = F, debug=F)
-#saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_5_11_18_p2.rds",sep = ""))
+test_results <- new_vp_mcmc_c(nsims = 10000, step_length = .25, vp_dir=vpdir, static_vars = static_list, 
+                                          optimize_vars = optimize_list, logs = F, verbose = F, debug=F)
+saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_5_25_18_p2.rds",sep = ""))
 
 for(i in 1:20){
-  test_results <- continue_vp_mcmc(5000,test_results,step_length = .25)
-  saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_5_11_18_p5.rds",sep = ""))
+  test_results <- continue_vp_mcmc(10000,test_results,step_length = .25)
+  saveRDS(test_results,file=paste(vpdir,"output/mcmc_run_objects/run_5_25_18_p4.rds",sep = ""))
 }
 
 test_results <- continue_vp_mcmc(10,test_results,step_length = .2)
@@ -194,6 +197,8 @@ summary(results_burned)
 results_bt <- burnAndThin(results,burn=50000,thin=100)
 results_bt2 <- burnAndThin(results,burn=50000,thin=1000)
 results_bt3 <- burnAndThin(results,burn=50000,thin=1000)
+results_thin<- burnAndThin(results,thin=1000)
+
 #results_bt2 <- burnAndThin(results,burn=35000, thin = 1000)
 summary(results_bt)
 autocorr.plot(results_bt)
@@ -218,8 +223,13 @@ MCMCtrace(results_bt,filename="test4_265k_thin100",
           iter=65000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
 
 
-MCMCtrace(results_bt2,filename="test4_290k_thin1k_burn50k",
-          iter=290000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
+MCMCtrace(results_bt2,filename="test5_195k_thin1k_burn1k",
+          iter=195000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
+
+
+#customizable density plot
+d <- density(results_bt2[,'AILarvaLD50'])
+plot(d,xlim=c(0,0.05), xlab="Parameter value")
 
 
 ```
@@ -262,5 +272,19 @@ for(i in 1:10){
   lines(c(4,5,6,8),(fitted[i,]-sd_mle)/1000,col='darkgrey',lwd=2,lty=2)
 }
 dev.off()
+
+```
+
+
+```{r}
+#plot test 4 without burn in (for full axes)
+test4_results <- readRDS(file=paste(vpdir,"output/mcmc_run_objects/run_5_11_18_p5.rds",sep = ""))
+results4 <- mcmc(test4_results$param_trace[, test4_results$mcmc_params$optimize_vars[["names"]]])
+test4_thin  <- burnAndThin(results4,thin=1000)
+
+MCMCtrace(test4_thin,filename="test4_300k_thin1k_burn0",
+          iter=300000,wd=paste(vpdir,"reports/figures/",sep="")) #creates pdf in reports/figures folder
+
+
 
 ```

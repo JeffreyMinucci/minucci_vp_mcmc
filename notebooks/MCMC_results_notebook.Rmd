@@ -117,12 +117,16 @@ clo_summary$Peak <- round(clo_summary$Peak,1)
 
 #standard error for field data
 std.err <- function(x){sd(x)/sqrt(length(x))}
-
 hive_data <- read.csv(paste(vpdir,'data/raw/field_bee_areas_hive.csv', sep=""))
+cm2_to_bees <- 1.45 #FROM 02write_input.R (via field tests)
+hive_data$bees <- hive_data$bees_cm2 * cm2_to_bees
+hive_data$month <- factor(hive_data$month)
+SE <- aggregate(bees ~ site_abv + month, data=hive_data,std.err)
+SE
 
 
 
-pdf(paste(vpdir,"/reports/figures/mle_pop_fitted_ci_label.pdf",sep=""),w=8,h=14)
+pdf(paste(vpdir,"/reports/figures/mle_pop_fitted_ci_label_v2.pdf",sep=""),w=8,h=14)
 par(mfrow=c(5,2))
 for(i in 1:10){
   plot(c(4,5,6,8),bee_pops[i,]/1000,type='p', pch=19,ylim=c(0,45),xlab="Month of year",ylab="# of bees (1000s)")
@@ -134,6 +138,11 @@ for(i in 1:10){
   lines(c(4,5,6,8),(cbind(bee_initial,low_ci)[i,])/1000,col='darkgrey',lwd=2,lty=2)
   lines(c(4,5,6,8),(cbind(bee_initial,high_ci)[i,])/1000,col='darkgrey',lwd=2,lty=2)
   
+  #standard error for field pop estimates
+  
+  arrows(c(4,5,6,8),(bee_pops[i,]+SE[c(i,i+10,i+20,i+30),3])/1000, c(4,5,6,8), (bee_pops[i,]-SE[c(i,i+10,i+20,i+30),3])/1000,
+  length=0.05, angle=90, code=3)
+  
   #text annotation
   text(c(6.5,6.5,6.5),c(44,39,34), c(paste('Site:',clo_summary[i,1]),paste('Mean clo.:',clo_summary[i,2], 'ppb'), 
                                paste('Peak clo.:', clo_summary[i,3],'ppb')),pos=4)
@@ -144,17 +153,16 @@ dev.off()
 
 #just first 4 sites for iEMSs presentation
 per_corn <- c(22,1,49,30,22,19,39,8,31,30)
-pdf(paste(vpdir,"/reports/figures/field_pops_first4.pdf",sep=""),w=8,h=7)
+pdf(paste(vpdir,"/reports/figures/field_pops_first4_v2.pdf",sep=""),w=8,h=7)
 par(mfrow=c(2,2))
 for(i in 1:4){
   plot(c(4,5,6,8),bee_pops[i,]/1000,type='n', pch=19,ylim=c(0,45),xlab="Month of year",ylab="# of bees (1000s)",lwd=2)
   rect(4,-10,4.3,80,col="cornflowerblue")
   points(c(4,5,6,8),bee_pops[i,]/1000, pch=19)
   lines(c(4,5,6,8),bee_pops[i,]/1000,lwd=2)
-
-  #lines(c(4,5,6,8),fitted[i,]/1000,col='darkgrey',lwd=2)
-  #lines(c(4,5,6,8),(fitted[i,]+sd_mle)/1000,col='darkgrey',lwd=2,lty=2)
-  #lines(c(4,5,6,8),(fitted[i,]-sd_mle)/1000,col='darkgrey',lwd=2,lty=2)
+  
+  arrows(c(4,5,6,8),(bee_pops[i,]+SE[c(i,i+10,i+20,i+30),3])/1000, c(4,5,6,8), (bee_pops[i,]-SE[c(i,i+10,i+20,i+30),3])/1000,
+  length=0.05, angle=90, code=3)
   
   #text annotation
   text(c(6.1,6.1),c(44,39), c(paste('Site:',clo_summary[i,1]),paste('Corn cover: ',per_corn[i],'%',sep="")),pos=4)
