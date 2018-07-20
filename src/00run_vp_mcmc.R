@@ -16,7 +16,7 @@
 #   Repeat Nsims:
 #   6) Generate new proposal parameters
 #   7) Repeat steps 3-6 for proposal
-#   8) Accept proposal as new state with probabliliy likelihood(proposal)/likelihood(current)
+#   8) Accept proposal as new state with probabliliy ~ posterior(proposal)/posterior(current)
 #   
 #   @return: a list containing (1) a data frame of parameter values at each MCMC step, 
 #           (2) a vector of the likelihood trace, and (3) the acceptance rate
@@ -179,7 +179,7 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
     proposal_all <- cbind(static_params,proposal)
     if(debug) print(proposal_all)
     if(length(optimize_vars[["names"]])==1) colnames(proposal_all)[length(static_vars[["names"]])+1] <- optimize_vars[["names"]]
-    if(!(any(proposal > bound_u) | any((proposal < bound_l)))){
+    if(!(any(proposal > bound_u) | any((proposal < bound_l)))){   #if any parameter is outside our uniform prior bounds, we assign likelihood 0
       write_vp_input_sites_c(proposal_all[names(inputdata) != "sd"], dir_structure[["input"]], init_cond = initial_conditions,
                              neonic_path = dir_structure[["neonic_profiles"]])
       run_vp_parallel_c(i,dir_structure[["exe_folder"]],dir_structure[["exe_file"]],
@@ -199,8 +199,8 @@ new_vp_mcmc <- function(vrp_filename = "default_jeff.vrp", nsims=20, step_length
         print(paste("proposal: ",like))
         print(paste("current: ",like_trace[i-1]))
       }
-      if(log(runif(1)) < (like-like_trace[i-1])){
-        inputdata <- rbind(inputdata,proposal_all,make.row.names=F)
+      if(log(runif(1)) < (like-like_trace[i-1])){ #here we would compare the posteriors but we used uniform priors that cancel out
+        inputdata <- rbind(inputdata,proposal_all,make.row.names=F)  
         like_trace[i] <- like
         accepts <- accepts + 1
       }

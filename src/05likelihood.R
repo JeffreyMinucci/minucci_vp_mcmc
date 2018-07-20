@@ -37,7 +37,7 @@ vp_loglik_dates <- function(actual,pred,var){
 #Function to calculate log likelihood for all dates of observations and one prediction for all sites
 # @param actual: a matrix containing ACTUAL values for 10 sites (rows) across the 3 time points (columns)
 # @param pred: a matrix containing PREDICTED values for 10 sites (rows) across the 3 time points (columns)
-# @param var: a single variance term (for now calculate from one month's data)
+# @param var: a single variance term (fit by MCMC)
 #
 # @return: a loglikelihood value
 
