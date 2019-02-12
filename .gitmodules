@@ -1,0 +1,3 @@
+[submodule "VarroaPy"]
+	path = VarroaPy
+	url = https://github.com/quanted/VarroaPy.git
