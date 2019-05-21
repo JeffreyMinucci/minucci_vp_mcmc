@@ -22,6 +22,8 @@ RESPONSE_FILTER = ['Adults',  'Eggs'] #For now use only these responses!
 INITIAL_DF = pd.read_csv(os.path.join(DATA_DIR, 'raw/','field_initial_conditions.csv'))
 INITIAL_DF['site'] = np.arange(1,11,1).astype("str")
 INITIAL_DF.set_index('site', inplace=True)
+VRP_FILE = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                        '..','varroapop_sessions', 'rare_study.vrp'))
 
 
 def simulate(pars, save = False, logs = False):
@@ -59,7 +61,8 @@ def simulate(pars, save = False, logs = False):
             site_pars['ICQueenStrength'] = np.random.normal(loc = float(parameters['ICQueenStrength_mean']), scale = float(parameters['ICQueenStrength_sd']))
         while not (4 <= site_pars['ICForagerLifespan'] <= 16):
             site_pars['ICForagerLifespan'] = np.random.normal(loc = float(parameters['ICForagerLifespan_mean']), scale = float(parameters['ICForagerLifespan_sd']))
-        vp = VarroaPop(parameters = site_pars, weather_file = weather_path, verbose=False, unique=True, keep_files=save, logs=logs)
+        vp = VarroaPop(parameters = site_pars, weather_file = weather_path, vrp_file = VRP_FILE,
+                       verbose=False, unique=True, keep_files=save, logs=logs)
         vp.run_model()
         dates = DATES_STR.iloc[index,:]
         site_response = filter_site_responses(vp.get_output(), dates_str= dates)
