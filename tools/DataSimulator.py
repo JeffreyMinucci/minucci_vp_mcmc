@@ -16,9 +16,9 @@ END_DATE = '08/25/2015'
 DATES = ['5', '6', '8']
 DATES_STR = pd.read_csv(os.path.join(DATA_DIR+"/raw/field_bee_areas.csv")).iloc[:, 15:19]
 SITES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
-RESPONSE_VARS = [('Adults', ['Adult Drones', 'Adult Workers', 'Foragers']),('Pupae',['Capped Drone Brood', 'Capped Worker Brood']),
+RESPONSE_VARS = [('Adults', ['Adult Drones', 'Adult Workers']),('Pupae',['Capped Drone Brood', 'Capped Worker Brood']),
                  ('Larvae', ['Drone Larvae', 'Worker Larvae']),  ('Eggs', ['Drone Eggs', 'Worker Eggs'])]
-RESPONSE_FILTER = ['Adults'] #For now use only these responses!
+RESPONSE_FILTER = ['Adults',  'Eggs'] #For now use only these responses!
 INITIAL_DF = pd.read_csv(os.path.join(DATA_DIR, 'raw/','field_initial_conditions.csv'))
 INITIAL_DF['site'] = np.arange(1,11,1).astype("str")
 INITIAL_DF.set_index('site', inplace=True)
@@ -33,9 +33,9 @@ def simulate(pars, save = False, logs = False):
                 ICQueenStrength_sd
                 ICForagerLifespan_mean
                 ICForagerLifespan_sd
-                AIAdultLD50  # in log10!
+                AIAdultLD50
                 AIAdultSlope
-                AILarvaLD50   # in log10!
+                AILarvaLD50
                 AILarvaSlope
                 AIHalfLife
     :return a dictionary of summary stats
@@ -45,8 +45,6 @@ def simulate(pars, save = False, logs = False):
     for name, value in parameters.items():
         if not name.endswith(('_mean','_sd')):
             static_pars[name] = value
-    static_pars['AIAdultLD50'] = 10**static_pars['AIAdultLD50'] #un log transform
-    static_pars['AILarvaLD50'] = 10**static_pars['AILarvaLD50'] #un log transform
     static_pars['NecPolFileEnable'] = 'true'
     weather_path = os.path.join(DATA_DIR,'external/weather/weather_2015','18815_grid_39.875_lat.wea')
     all_responses = pd.DataFrame()
@@ -105,13 +103,13 @@ def generate_start(pars, site, initial_df):
     vars = ['bees_cm2_4', 'capped_cm2_4', 'open_cm2_4', 'pollen_cm2_4', 'nectar_cm2_4'] #cols of initial conditions
     vals = df.loc[site,vars].copy()
     cells_per_cm2 = 3.96 #based on hex w flat to flat distance of 0.54 cm = cell vol of 0.2525 cm2
-    paras['ICWorkerAdults'] = floor(vals[0] * 1.45) #number from Chia
+    paras['ICWorkerAdults'] = floor((vals[0] * 1.45) / 0.7) #number from Chia, increased to account for unseen foragers
     paras['ICDroneAdults'] = 0
-    paras['ICWorkerBrood'] = floor(vals[1] * cells_per_cm2 * .66) #based on time in stage
+    paras['ICWorkerBrood'] = floor(vals[1] * cells_per_cm2)
     paras['ICDroneBrood'] = 0
-    paras['ICWorkerLarvae'] = floor(vals[1] * cells_per_cm2 * .33) #based on time in stage
+    paras['ICWorkerLarvae'] = floor(vals[2] * cells_per_cm2 * .66) #based on time in stage
     paras['ICDroneLarvae'] = 0
-    paras['ICWorkerEggs'] = floor(vals[2] * cells_per_cm2)
+    paras['ICWorkerEggs'] = floor(vals[2] * cells_per_cm2 * 0.33) #based on time in stage
     paras['ICDroneEggs'] = 0
     paras['InitColPollen'] = floor(vals[3] * cells_per_cm2* 0.316 *1.45) #based off 0.316 cm3 cell volume and 1.45 g/cm3 pollen density
     paras['InitColNectar'] = floor(vals[4] * cells_per_cm2* 0.316 * 1.13) #based off 0.316 cm3 cell volume and 1.13 g/cm3 nectar density
