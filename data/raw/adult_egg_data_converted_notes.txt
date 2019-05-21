@@ -1,0 +1,5 @@
+Data on adults and eggs for months 5, 6 and 8 were used to fit the model via ABC
+
+# of individuals was calculated as:
+- Adults - area of bees * 3.96 cells per cm2
+- Eggs - area of open brood * 3.96 cells per cm2 * 0.33 (assuming open cells are spread evenly across all ages, 1/3 should be eggs)
