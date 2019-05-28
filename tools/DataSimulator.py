@@ -4,6 +4,7 @@ import numpy as np
 import os
 import pandas as pd
 from math import floor
+import datetime
 
 #DEBUG options
 LOGS = False
@@ -39,9 +40,10 @@ def simulate(pars, save = False, logs = False):
                 AIAdultSlope
                 AILarvaLD50
                 AILarvaSlope
-                AIHalfLife
+
     :return a dictionary of summary stats
     """
+
     parameters = pars.copy() #copy our inputs so that we don't ever modify them (pyabc needs these)
     static_pars = {'SimEnd': END_DATE, 'IPollenTrips': 8, 'INectarTrips': 17, 'RQEnableReQueen': 'false'}
     for name, value in parameters.items():
@@ -119,3 +121,73 @@ def generate_start(pars, site, initial_df):
     return paras
 
 
+
+def simulate_all_dates(pars, save = False, logs = False):
+    """
+    Simulate data from the colony study using a set of VarroaPop parameters
+    This version returns the population at every singel date - can be used to
+    create posterior predictive plots
+
+    :param pars: Dictionary of parameters to vary.
+                ICQueenStrength_mean
+                ICQueenStrength_sd
+                ICForagerLifespan_mean
+                ICForagerLifespan_sd
+                AIAdultLD50
+                AIAdultSlope
+                AILarvaLD50
+                AILarvaSlope
+
+    :return a dict of arrays of varroapop summary stats(site x day) for adult/pupae/larvae/eggs/all)
+    """
+    start = datetime.datetime.strptime(START_DATES[1], "%m/%d/%Y") #pick earliest start date
+    end = datetime.datetime.strptime(END_DATE, "%m/%d/%Y")
+    all_dates = [(start + datetime.timedelta(days=x)).strftime("%m/%d/%Y") for x in range(0, (end - start).days)]
+    parameters = pars.copy() #copy our inputs so that we don't ever modify them (pyabc needs these)
+    static_pars = {'SimEnd': END_DATE, 'IPollenTrips': 8, 'INectarTrips': 17, 'RQEnableReQueen': 'false'}
+    for name, value in parameters.items():
+        if not name.endswith(('_mean','_sd')):
+            static_pars[name] = value
+    static_pars['NecPolFileEnable'] = 'true'
+    weather_path = os.path.join(DATA_DIR,'external/weather/weather_2015','18815_grid_39.875_lat.wea')
+    all_responses = pd.DataFrame()
+    for index, site in enumerate(SITES):
+        exposure_filename = 'neonic_profile_' + site + '.csv'
+        exposure_path = os.path.join(DATA_DIR,"processed/neonic_profiles/", exposure_filename)#os.path.abspath(os.path.join('data', exposure_filename))
+        site_pars = generate_start(static_pars.copy(), site, INITIAL_DF)
+        site_pars['NecPolFileName'] = exposure_path
+        site_pars['ICQueenStrength'] = 0
+        site_pars['ICForagerLifespan'] = 0
+        while not (1 <=site_pars['ICQueenStrength'] <= 5):
+            site_pars['ICQueenStrength'] = np.random.normal(loc = float(parameters['ICQueenStrength_mean']), scale = float(parameters['ICQueenStrength_sd']))
+        while not (4 <= site_pars['ICForagerLifespan'] <= 16):
+            site_pars['ICForagerLifespan'] = np.random.normal(loc = float(parameters['ICForagerLifespan_mean']), scale = float(parameters['ICForagerLifespan_sd']))
+        vp = VarroaPop(parameters = site_pars, weather_file = weather_path, vrp_file = VRP_FILE,
+                       verbose=False, unique=True, keep_files=save, logs=logs)
+        vp.run_model()
+        site_response = filter_site_responses(vp.get_output(), dates_str= all_dates)
+        all_responses = all_responses.append(site_response, ignore_index=True)
+
+    #Generate labels for rows and columns
+    rows = ['_'.join(x) for x in product(SITES, all_dates)]
+    all_responses['Index'] = pd.Series(rows) #Add our row labels
+    all_responses.set_index("Index", inplace=True) #Set row labels to be the index
+    n_dates = len(all_dates)
+    return_dfs = {}
+    for response in RESPONSE_VARS:
+        filtered_resp = all_responses.loc[:, response[0]]
+        wide = np.empty([10, n_dates])  # 10 sites, n_dates days,
+        for i in range(10):
+            wide[i, :] = filtered_resp.iloc[i * n_dates:(i + 1) * n_dates]
+        wide_df = pd.DataFrame(wide, index=SITES,
+                               columns=all_dates)
+        return_dfs[response[0]] = wide_df
+    # add all individuals sum
+    all_ind_mean = all_responses.sum(axis=1)
+    wide = np.empty([10, n_dates])  # 10 sites, n_dates days,
+    for i in range(10):
+        wide[i, :] = all_ind_mean.iloc[i * n_dates:(i + 1) * n_dates]
+    wide_df = pd.DataFrame(wide, index=SITES,
+                           columns=all_dates)
+    return_dfs["All"] = wide_df
+    return return_dfs
